@@ -2,7 +2,7 @@
 The input of n-1 sensors affected by terroristic activities can be accurately predicted by our algorithm.
 
 # installation instructions
-- first, install ros indigo (latest turtlebot capable version)
+- first, install ros indigo (latest turtlebot capable version), make sure to run: echo "source /opt/ros/indigo/setup.bash" >> ~/.bashrc and source the .bashrc
 - then run: sudo apt-get install libsdformat1 gazebo2 ros-indigo-turtlebot ros-indigo-turtlebot-apps ros-indigo-turtlebot-interactions ros-indigo-turtlebot-simulator ros-indigo-kobuki-ftdi ros-indigo-rocon-remocon ros-indigo-rocon-qt-library ros-indigo-ar-track-alvar-msgs
 - install all the essential python libraries including pip, then run: [sudo] pip install virtualenv
 - clone this repository to ~/projects/eecs499/ and cd into robot_security.
