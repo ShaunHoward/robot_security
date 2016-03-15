@@ -11,4 +11,5 @@ The input of n-1 sensors affected by terroristic activities can be accurately pr
 - run pip install -r requirements.txt from robot_security directory.
 
 # to launch turtle bot
-- go to install directory and run: roslaunch turtlebot_stage turtlebot_in_stage.launch
+- run: roslaunch turtlebot_stage turtlebot_in_stage.launch
+- Note: this will only work if ros indigo and turtlebot simulators are properly installed.
