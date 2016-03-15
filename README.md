@@ -9,5 +9,6 @@ The input of n-1 sensors affected by terroristic activities can be accurately pr
 - then, run: virtualenv rsvenv
 - then: source rsvenv/bin/activate to activate the python venv for installing python libraries w.o affecting global system
 - run pip install -r requirements.txt from robot_security directory.
+
 # to launch turtle bot
 - go to install directory and run: roslaunch turtlebot_stage turtlebot_in_stage.launch
