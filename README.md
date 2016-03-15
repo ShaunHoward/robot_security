@@ -10,6 +10,9 @@ The input of n-1 sensors affected by terroristic activities can be accurately pr
 - then: source rsvenv/bin/activate to activate the python venv for installing python libraries w.o affecting global system
 - run pip install -r requirements.txt from robot_security directory.
 
-# to launch turtle bot
-- run: roslaunch turtlebot_stage turtlebot_in_stage.launch
+# to launch turtle bot simulation
+- for grid demo run: roslaunch turtlebot_stage turtlebot_in_stage.launch
+1. for gazebo: roslaunch turtlebot_gazebo turtlebot_world.launch
+2. after gazebo open control turtle bot with keyboard: roslaunch turtlebot_teleop keyboard_teleop.launch
+3. run rviz: roslaunch turtlebot_rviz_launchers view_robot.launch
 - Note: this will only work if ros indigo and turtlebot simulators are properly installed.
