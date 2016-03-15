@@ -1,7 +1,7 @@
 actionlib==1.11.3
 base-local-planner==1.12.7
 bondpy==1.7.16
-camera-calibration==1.12.14
+camera-calibration==0.2
 capabilities==0.2.0
 catkin==0.6.16
 catkin-pkg==0.2.10
