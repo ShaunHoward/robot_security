@@ -10,7 +10,6 @@ The input of n-1 sensors affected by terroristic activities can be accurately pr
 - then: source rsvenv/bin/activate to activate the python venv for installing python libraries w.o affecting global system
 - run pip install -r requirements.txt from robot_security directory.
 - add to python path in bashrc: PYTHONPATH='/opt/ros/indigo/lib/python2.7/dist-packages:$PYTHONPATH' and source it
-- can also add '/opt/ros/indigo/lib/' to system path if in an ide or something
 - if security issues occur: pip install urllib3[secure]
 
 # to launch turtle bot simulation
