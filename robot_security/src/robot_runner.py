@@ -1,4 +1,8 @@
 __author__ = 'shaun'
+#!/usr/bin/env python
+import rospy
+from std_msgs.msg import String
+from geometry_msgs.msg import Twist
 
 
 # runs the robot(s) around the map on random grids
@@ -7,14 +11,12 @@ __author__ = 'shaun'
 def run(robot_id):
     pass
 
-#!/usr/bin/env python
+
 # license removed for brevity
-import rospy
-from std_msgs.msg import String
 
 def talker():
     pub = rospy.Publisher('chatter', String, queue_size=10)
-    rospy.init_node('talker', anonymous=True)
+    rospy.init_node('robot_runner')
     rate = rospy.Rate(10) # 10hz
     while not rospy.is_shutdown():
         hello_str = "hello world %s" % rospy.get_time()
