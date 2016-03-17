@@ -4,7 +4,7 @@ Python project:
 
 mkdir proj/src
 cd proj/src
-catkin_create_pkg pkg_name std_msgs rospy roscpp
+catkin_create_pkg pkg_name std_msgs geometry_msgs rospy roscpp
 cd proj
 catkin_make
 add source proj/devel/setup.bash to .bashrc and source that
