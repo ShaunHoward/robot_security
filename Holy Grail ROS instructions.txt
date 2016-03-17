@@ -1,0 +1,46 @@
+Holy Grail ROS instructions
+
+Python project:
+
+mkdir proj/src
+cd proj/src
+catkin_create_pkg pkg_name std_msgs rospy roscpp
+cd proj
+catkin_make
+add source proj/devel/setup.bash to .bashrc and source that
+cd proj/src/pkg_name
+mkdir bin
+mkdir src
+mkdir src/py_pkg
+touch src/py_pkg/__init__.py
+cd proj/src/pkg_name
+touch setup.py
+in setup.py:
+
+## ! DO NOT MANUALLY INVOKE THIS setup.py, USE CATKIN INSTEAD
+
+from distutils.core import setup
+from catkin_pkg.python_setup import generate_distutils_setup
+
+# fetch values from package.xml
+setup_args = generate_distutils_setup(
+    packages=['py_pkg'],
+    package_dir={'': 'src'},
+)
+
+setup(**setup_args)
+
+In order for our setup.py to be used by catkin, we also need to uncomment this line in the CMakeLists.txt:
+
+## Uncomment if the package has a setup.py
+catkin_python_setup()
+
+Finally, for our script to be installed to the right location, if users install your package, this line is required in CMakeLists.txt:
+
+catkin_install_python(PROGRAMS bin/hello
+  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
+
+cd proj
+catkin_make
+source devel/setup.bash
+run code
