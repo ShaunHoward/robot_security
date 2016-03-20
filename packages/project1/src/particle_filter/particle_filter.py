@@ -64,6 +64,7 @@ def w_gauss(a, b):
     g = math.e ** -(error ** 2 / (2 * sigma2))
     return g
 
+
 def compute_mean_point(particles):
     """
     Compute the mean for all particles that have a reasonably good weight.
