@@ -24,15 +24,30 @@ def best_policy(mdp, U):
 
 
 def expected_utility(a, s, U, mdp):
-    "The expected utility of doing a in state s, according to the MDP and U."
+    """
+    The expected utility of doing a in state s, according to the MDP and U.
+    """
     return sum([p * U[s1] for (p, s1) in mdp.T(s, a)])
 
 
-def to_grid(self, mapping):
+def to_grid(mapping):
     """Convert a mapping from (x, y) to v into a [[..., v, ...]] grid."""
-    return list(reversed([[mapping.get((x,y), None)
-                           for x in range(self.cols)]
-                          for y in range(self.rows)]))
+    return list(reversed([[mapping.get((x, y), None)
+                           for x in range(len(mapping[0]))]
+                          for y in range(len(mapping))]))
+
+
+def to_mapping(grid):
+    """
+    Convert from grid map to reward mapping.
+    :param grid:
+    :return:
+    """
+    R = dict()
+    for x in range(len(grid[0])):
+        for y in range(len(grid)):
+            R[x, y] = grid[y][x]
+    return R
 
 
 def to_arrows(self, policy):
@@ -42,30 +57,24 @@ def to_arrows(self, policy):
 
 class ROMDP(object):
 
-    Vk_1 = dict()
+    C = dict()
     S = set()
     R = dict()
 
-    def __init__(self, grid, A, P, O, C, goal_states, discount=.9):
+    def __init__(self, grid, goal_states, discount=.9):
         """
         Create the Redundant Observable Markov Decision Process
         object. O and C are two elements added in addition to the
         conventional MDP definition.
         :param grid: a 2-d grid of rewards for each state at x and y (lists within a list)
-        :param A: finite list of actions
-        :param P: transition probabilities
-        :param O: finite set of weight observations following a certain action a
         :param C: confidence function mapping elements of O into discrete probability distributions in S.
         In other words, C is the probability that the agent is in state s given the observation O.
         :param discount: the discount of probabilities over time
         """
-        self.A = A
-        self.P = P
-        self.O = O
-        self.C = C
+        self.A = orientations
         self.discount = discount
-        self.Vk_1 = self.construct_vk()
         self.goal_states = goal_states
+        self.initialize_c()
 
         # we need row 0 on the bottom rather than the top
         self.grid = grid.reverse()
@@ -75,6 +84,11 @@ class ROMDP(object):
 
         # produce S and R from the given grid
         self.construct_states_and_rewards(self.grid)
+
+    def initialize_c(self):
+        self.C = dict()
+        for s in self.S:
+            self.C[s] = 0
 
     def construct_states_and_rewards(self, grid):
         """
@@ -91,18 +105,6 @@ class ROMDP(object):
                 if grid[y][x] is not None:
                     self.S.add((x, y))
 
-    def construct_vk(self):
-        Vk = dict()
-        for s in self.S:
-            Vk[s] = 0
-        return Vk
-
-    def error_is_at_or_above(self, Vk, Vk_1, eps):
-        for s in self.S:
-            if abs(Vk[s] - Vk_1[s]) >= eps:
-                return True
-        return False
-
     def T(self, state, action):
         """
         Calculate the probability of reaching every state from s given
@@ -114,53 +116,55 @@ class ROMDP(object):
         if action is None:
             return [(0.0, state)]
         else:
-            return [(0.8, self.go(state, action)),
-                    (0.1, self.go(state, turn_right(action))),
-                    (0.1, self.go(state, turn_left(action)))]
+            return [(0.8, self.move(state, action)),
+                    (0.1, self.move(state, turn_right(action))),
+                    (0.1, self.move(state, turn_left(action)))]
 
-    def go(self, state, direction):
-        """Return the state that results from going in this direction."""
+    def move(self, state, direction):
+        """
+        Return the state that results from moving in this direction.
+        """
         state1 = vector_add(state, direction)
         return if_(state1 in self.S, state1, state)
 
     def actions(self, state):
-        """Set of actions that can be performed in this state.  By default, a
+        """
+        Set of actions that can be performed in this state.  By default, a
         fixed list of actions, except for terminal states. Override this
-        method if you need to specialize by state."""
+        method if you need to specialize by state.
+        """
         if state in self.goal_states:
             return [None]
         else:
             return self.A
 
-    def value_iteration(self, O, U=None, K=10, epsilon=0.001):
+    def value_iteration(self, O, K=10, epsilon=0.001):
         """
         Solve a ROMDP by value iteration with redundancy.
         :param O: the set of observations aka N sensor readings from N robots
-        :param U: initial confidence function mapping of O into discrete probability dists in S
         :param K: the maximum number of iterations to perform
         :return U1: the optimal policy set
         """
         k = 0
-        if U is not None:
-            C = U
-        else:
-            C = dict([(s, 0) for s in self.S])
-        while k < K or True:
-            U = C.copy()
+        while k < K:
+            U = self.C.copy()
             delta = 0
             # do standard MDP
             for s in self.S:
-                C[s] = self.R[s] + self.discount * max([sum([p * U[s1] for (p, s1) in self.T(s, a)])
-                                                       for a in self.A(s)])
-                delta = max(delta, abs(C[s] - U[s]))
+                self.C[s] = self.R[s] + self.discount * max([sum([p * U[s1]
+                                                            for (p, s1) in self.T(s, a)])
+                                                            for a in self.A(s)])
+                delta = max(delta, abs(self.C[s] - U[s]))
             # continue with redundant MDP
             if len(O) > 1:
                 for o in self.O:
-                    C[o] = self.R[o] + self.discount * max([sum([(p * C[o1]) * U[o1] for (p, o1) in self.T(o, a)])
-                                                           for a in self.A(o)])
-                    delta = max(delta, abs(C[s] - U[s]))
+                    self.C[o] = self.R[o] + self.discount * max([sum([(p * self.C[o1]) * U[o1]
+                                                                for (p, o1) in self.T(o, a)])
+                                                                for a in self.A(o)])
+                    delta = max(delta, abs(self.C[o] - U[o]))
             # return an optimal policy if found
             if delta < epsilon * (1 - self.discount) / self.discount:
-                return C
+                return self.C
+            k += 1
         # return a sub-optimal policy
-        return C
+        return self.C
