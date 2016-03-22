@@ -1,0 +1,38 @@
+<launch>
+  <arg name="base"/>
+  <arg name="stacks"/>
+  <arg name="3d_sensor"/>
+  
+  <arg name="urdf_file" default="$(find xacro)/xacro.py '$(find turtlebot_description)/robots/$(arg base)_$(arg stacks)_$(arg 3d_sensor).urdf.xacro'" />
+  
+  <!-- Gazebo model spawner -->
+    <group ns="turtlebot1">
+        <param name="robot_description" command="$(arg urdf_file)" />
+        <node name="spawn_turtlebot_model" pkg="gazebo_ros" type="spawn_model"
+        args="$(optenv robot_initial_pose) -unpause -urdf -param robot_description -model mobile_base1 -x 0 -y 0 -z 0"/>
+    </group> 
+
+    <group ns="turtlebot2">
+        <param name="robot_description" command="$(arg urdf_file)" />
+        <node name="spawn_turtlebot_model" pkg="gazebo_ros" type="spawn_model"
+        args="$(optenv robot_initial_pose) -unpause -urdf -param robot_description -model mobile_base2 -x 5 -y 0 -z 0"/>
+    </group>
+
+    <group ns="turtlebot3"> 
+        <param name="robot_description" command="$(arg urdf_file)" />
+        <node name="spawn_turtlebot_model" pkg="gazebo_ros" type="spawn_model"
+        args="$(optenv robot_initial_pose) -unpause -urdf -param robot_description -model mobile_base3 -x 10 -y 0 -z 0"/>
+    </group>
+
+  <!-- Velocity muxer -->
+  <node pkg="nodelet" type="nodelet" name="mobile_base_nodelet_manager" args="manager"/>
+  <node pkg="nodelet" type="nodelet" name="cmd_vel_mux"
+        args="load yocs_cmd_vel_mux/CmdVelMuxNodelet mobile_base_nodelet_manager">
+    <param name="yaml_cfg_file" value="$(find turtlebot_bringup)/param/mux.yaml" />
+    <remap from="cmd_vel_mux/output" to="mobile_base/commands/velocity"/>
+  </node>
+
+  <!-- Bumper/cliff to pointcloud (not working, as it needs sensors/core messages) -->
+  <!-- Originally this is uncommented, but I commented it out since it says it is not working - MWS -->
+  <!-- <include file="$(find turtlebot_bringup)/launch/includes/kobuki/bumper2pc.launch.xml"/-->
+</launch>
