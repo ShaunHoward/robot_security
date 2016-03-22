@@ -96,3 +96,20 @@ class Particle(object):
 
     def dist_to(self, x, y):
         return distance((x, y), (self.x, self.y))
+
+    def advance_by(self, speed, occupancy_check=None, noisy=False):
+        h = self.h
+        if noisy:
+            speed, h = add_little_noise(speed, h)
+            h += random.uniform(-3, 3)  # needs more noise to disperse better
+        r = math.radians(h)
+        dx = math.sin(r) * speed
+        dy = math.cos(r) * speed
+        if occupancy_check is None or occupancy_check(self, dx, dy):
+            self.move_by(dx, dy)
+            return True
+        return False
+
+    def move_by(self, x, y):
+        self.x += x
+        self.y += y
