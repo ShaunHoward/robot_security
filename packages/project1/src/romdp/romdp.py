@@ -60,6 +60,7 @@ class ROMDP(object):
     C = dict()
     S = set()
     R = dict()
+    grid = None
 
     def __init__(self, grid, goal_states, discount=.9):
         """
@@ -74,16 +75,16 @@ class ROMDP(object):
         self.A = orientations
         self.discount = discount
         self.goal_states = goal_states
-        self.initialize_c()
+
 
         # we need row 0 on the bottom rather than the top
-        self.grid = grid.reverse()
-
-        self.rows = len(grid)
-        self.cols = len(grid[0])
+        self.grid = grid
 
         # produce S and R from the given grid
         self.construct_states_and_rewards(self.grid)
+
+        # must be done after states are constructed
+        self.initialize_c()
 
     def initialize_c(self):
         self.C = dict()
@@ -99,10 +100,10 @@ class ROMDP(object):
         grid given its labeled rewards per coordinate pair.
         :param grid: a list of lists representing the rows of the grid
         """
-        for x in range(self.cols):
-            for y in range(self.rows):
-                self.R[x, y] = grid[y][x]
-                if grid[y][x] is not None:
+        for x in range(self.grid.width):
+            for y in range(self.grid.height):
+                self.R[x, y] = self.grid.grid[y][x]
+                if self.grid.grid[y][x] is not None:
                     self.S.add((x, y))
 
     def T(self, state, action):
@@ -138,7 +139,7 @@ class ROMDP(object):
         else:
             return self.A
 
-    def value_iteration(self, O, K=10, epsilon=0.001):
+    def value_iteration(self, O=[], K=10, epsilon=0.001):
         """
         Solve a ROMDP by value iteration with redundancy.
         :param O: the set of observations aka N sensor readings from N robots
@@ -153,14 +154,14 @@ class ROMDP(object):
             for s in self.S:
                 self.C[s] = self.R[s] + self.discount * max([sum([p * U[s1]
                                                             for (p, s1) in self.T(s, a)])
-                                                            for a in self.A(s)])
+                                                            for a in self.actions(s)])
                 delta = max(delta, abs(self.C[s] - U[s]))
             # continue with redundant MDP
             if len(O) > 1:
-                for o in self.O:
+                for o in O:
                     self.C[o] = self.R[o] + self.discount * max([sum([(p * self.C[o1]) * U[o1]
                                                                 for (p, o1) in self.T(o, a)])
-                                                                for a in self.A(o)])
+                                                                for a in self.actions(o)])
                     delta = max(delta, abs(self.C[o] - U[o]))
             # return an optimal policy if found
             if delta < epsilon * (1 - self.discount) / self.discount:
