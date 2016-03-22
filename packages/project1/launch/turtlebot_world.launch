@@ -68,8 +68,8 @@
             <param name="scan_height" value="10"/>
             <param name="output_frame_id" value="$(arg model_name)/camera_depth_frame"/>
             <param name="range_min" value="0.45"/>
-            <remap from="image" to="$(arg model_name)/camera/depth/image_raw"/>
-            <remap from="scan" to="$(arg model_name)/scan"/>
+            <remap from="image" to="camera/depth/image_raw"/>
+            <remap from="scan" to="scan"/>
         </node>
     </group> 
 
@@ -98,8 +98,8 @@
             <param name="scan_height" value="10"/>
             <param name="output_frame_id" value="$(arg model_name)/camera_depth_frame"/>
             <param name="range_min" value="0.45"/>
-            <remap from="image" to="$(arg model_name)/camera/depth/image_raw"/>
-            <remap from="scan" to="$(arg model_name)/scan"/>
+            <remap from="image" to="camera/depth/image_raw"/>
+            <remap from="scan" to="scan"/>
         </node>
     </group> 
 
