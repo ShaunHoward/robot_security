@@ -14,7 +14,7 @@
     </include>
 
     <group ns="turtlebot1">
-        <include file="$(find project1)/launch/turtlebot.launch.xml">
+        <include file="$(find project1)/launch/stationary_turtlebot.launch.xml">
             <arg name="model_name" value="turtlebot1"/>
             <arg name="x_pos" value="0"/>
             <arg name="y_pos" value="0"/>
@@ -23,7 +23,7 @@
     </group> 
 
     <group ns="turtlebot2">
-        <include file="$(find project1)/launch/turtlebot.launch.xml">
+        <include file="$(find project1)/launch/stationary_turtlebot.launch.xml">
             <arg name="model_name" value="turtlebot2"/>
             <arg name="x_pos" value="4"/>
             <arg name="y_pos" value="0"/>
@@ -32,7 +32,7 @@
     </group> 
 
     <group ns="turtlebot3">
-        <include file="$(find project1)/launch/turtlebot.launch.xml">
+        <include file="$(find project1)/launch/stationary_turtlebot.launch.xml">
             <arg name="model_name" value="turtlebot3"/>
             <arg name="x_pos" value="6"/>
             <arg name="y_pos" value="0"/>

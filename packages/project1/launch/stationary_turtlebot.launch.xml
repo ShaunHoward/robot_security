@@ -39,7 +39,7 @@
         <param name="output_frame_id" value="$(arg model_name)/camera_depth_frame"/>
         <param name="range_min" value="0.45"/>
         <remap from="image" to="camera/depth/image_raw"/>
-        <remap from="scan" to="scan"/>
+        <!--remap from="scan" to="scan"/-->
     </node>
 
     <node pkg="project1" type="stationary_turtlebot.py" name="robot"/>
