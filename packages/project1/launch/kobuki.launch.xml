@@ -6,6 +6,7 @@
     <arg name="x_pos" default="0"/>
     <arg name="y_pos" default="0"/>
     <arg name="z_pos" default="0"/>
+    <arg name="yaw" default="0"/>
 
     <arg name="urdf_file" default="$(find xacro)/xacro.py '$(find turtlebot_description)/robots/$(arg base)_$(arg stacks)_$(arg 3d_sensor).urdf.xacro'" />
   
@@ -19,7 +20,8 @@
             -model $(arg model_name)
             -x $(arg x_pos)
             -y $(arg y_pos)
-            -z $(arg z_pos)"/>
+            -z $(arg z_pos)
+            -Y $(arg yaw)"/>
 
         
     <!-- Velocity muxer -->

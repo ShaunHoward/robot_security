@@ -1,4 +1,4 @@
-__author__ = 'shaun'
+#!/usr/bin/env python
 
 import rospy
 import tf
@@ -11,6 +11,7 @@ from particle_filter import particle_filter_node as pf
 
 class GridMap(object):
     last_goal = None
+
     def __init__(self, grid, goal):
         self.grid = grid
         self.goal = goal
