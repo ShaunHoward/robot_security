@@ -45,17 +45,28 @@
     </node>
 
     <!-- Robot Localization nodes-->
-    <node pkg="robot_localization" type="ekf_localization_node" name="ekf_localization" clear_params="true">
+    <node pkg="robot_localization" type="ekf_localization_node" name="ekf_localization" clear_params="true" output="screen">
         <param name="frequency" value="30"/>
         <param name="sensor_timeout"  value="0.1"/>
         <param name="two_d_mode" value="true"/>
         <!--param name="map_frame" value="map"/-->
         <param name="odom_frame" value="$(arg model_name)/odom"/>
-        <param name="base_link_frame" value="$(arg model_name)/base_footprint"/>
+        <param name="base_link_frame" value="$(arg model_name)/base_footprint_generated"/>
+        <!-- If this is .../base_footprint, I get this from roswtf:
+         ERROR TF multiple authority contention:
+         * node [/turtlebot2/ekf_localization] publishing transform [turtlebot2/base_footprint] with parent [turtlebot2/odom] already published by node [/gazebo]
+         * node [/gazebo] publishing transform [turtlebot2/base_footprint] with parent [turtlebot2/odom] already published by node [/turtlebot2/ekf_localization]
+         This is because Gazebo is publishing a transform from odom to base_footprint and so is ekf_localization
+         Also gets an error with transforming from base_link to base_footprint for the IMU messages, unsure of why this is, possibly due to the multiple authority contention-->
+        <!-- If this is .../base_footprint_generated:
+        roswtf returns no errors. However the IMU is still not happy. The IMU's frame is base_link, and there is no transform from base_footprint_generated to base_link.
+        Can't publish a transform from base_link to base_footprint_generated because then base_link would have two parents.
+        Possible solution is to create a copy of the IMU data and change the frame_id to base_link_generated, and then give it the same transform as the real robot-->
+        <remap from="$(arg model_name)/base_footprint" to="$(arg model_name)/base_footprint_generated"/> 
         <param name="world_frame" value="$(arg model_name)/odom"/>
         <param name="transform_time_offset" value="0.0"/>
-        <param name="odom0" value="odom"/> <!-- Internal odometry-->
-        <param name="imu0" value="mobile_base/sensors/imu_data"/> <!-- Internal IMU-->
+        <param name="odom0" value="odom_remapped"/> <!-- Internal odometry-->
+        <param name="imu0" value="imu_data_remapped"/> <!-- Internal IMU-->
         <param name="pose0" value="external_readings/pose0"/> <!-- 1st external pose calculation-->
         <param name="pose1" value="external_readings/pose1"/> <!-- 2nd external pose calculation-->
         <rosparam param="odom0_config">[false, false, false,
@@ -64,12 +75,12 @@
                                         false, false, true,
                                         false, false, false]
         </rosparam><!-- Fuse x velocity, y velocity and yaw velocity from odometry as suggested by sensor configuration tutorial-->
-        <!--rosparam param="imu0_config">[false, false, false,
+        <rosparam param="imu0_config">[false, false, false,
                                     false, false, true,
                                     false, false, false,
                                     false, false, true,
                                     true, false, false]
-        </rosparam--><!-- Fuse yaw, yaw velocity, and x acceleration from the IMU-->
+        </rosparam><!-- Fuse yaw, yaw velocity, and x acceleration from the IMU-->
         <rosparam param="pose0_config">[true, false, false,
                                         false, false, false,
                                         false, false, false,
@@ -94,4 +105,10 @@
 
     <!-- Main ROS node for turtlebot logic-->
     <node pkg="project1" type="stationary_turtlebot.py" name="robot"/>
+
+    <!-- Remap IMU messages to new topic-->
+    <node pkg="project1" type="sensor_remap.py" name="sensor_remap"/>
+
+    <!-- Static transform for base_link_remapped to base_footprint_generated-->
+    <node pkg="tf" type="static_transform_publisher" name="imu_remap_transform" args="0 0 -0.1 0 0 0 $(arg model_name)/base_footprint_generated $(arg model_name)/base_link_generated 100"/>
 </launch>
