@@ -15,6 +15,7 @@
     <param name="y_pos" type="double" value="$(arg y_pos)"/>
     <param name="z_pos" type="double" value="$(arg z_pos)"/>
 
+    <!-- Launch the necessary Kobuki nodes for turtlebot operation-->
     <include file="$(find project1)/launch/kobuki.launch.xml">
         <arg name="base" value="$(arg base)"/>
         <arg name="stacks" value="$(arg stacks)"/>
@@ -26,6 +27,7 @@
         <arg name="yaw" value="$(arg yaw)"/>
     </include>
 
+    <!-- Robot State Publisher for publishing tf status of turtlebot-->
     <node pkg="robot_state_publisher" type="robot_state_publisher" name="robot_state_publisher">
         <param name="publish_frequency" type="double" value="30.0" />
         <param name="tf_prefix" type="string" value="$(arg model_name)"/>
@@ -42,5 +44,54 @@
         <!--remap from="scan" to="scan"/-->
     </node>
 
+    <!-- Robot Localization nodes-->
+    <node pkg="robot_localization" type="ekf_localization_node" name="ekf_localization" clear_params="true">
+        <param name="frequency" value="30"/>
+        <param name="sensor_timeout"  value="0.1"/>
+        <param name="two_d_mode" value="true"/>
+        <!--param name="map_frame" value="map"/-->
+        <param name="odom_frame" value="$(arg model_name)/odom"/>
+        <param name="base_link_frame" value="$(arg model_name)/base_footprint"/>
+        <param name="world_frame" value="$(arg model_name)/odom"/>
+        <param name="transform_time_offset" value="0.0"/>
+        <param name="odom0" value="odom"/> <!-- Internal odometry-->
+        <param name="imu0" value="mobile_base/sensors/imu_data"/> <!-- Internal IMU-->
+        <param name="pose0" value="external_readings/pose0"/> <!-- 1st external pose calculation-->
+        <param name="pose1" value="external_readings/pose1"/> <!-- 2nd external pose calculation-->
+        <rosparam param="odom0_config">[false, false, false,
+                                        false, false, false,
+                                        true, true, false,
+                                        false, false, true,
+                                        false, false, false]
+        </rosparam><!-- Fuse x velocity, y velocity and yaw velocity from odometry as suggested by sensor configuration tutorial-->
+        <!--rosparam param="imu0_config">[false, false, false,
+                                    false, false, true,
+                                    false, false, false,
+                                    false, false, true,
+                                    true, false, false]
+        </rosparam--><!-- Fuse yaw, yaw velocity, and x acceleration from the IMU-->
+        <rosparam param="pose0_config">[true, false, false,
+                                        false, false, false,
+                                        false, false, false,
+                                        false, false, false,
+                                        false, false, false]
+        </rosparam><!-- Fuse x position only since we are doing 1-D at the moment-->
+                <rosparam param="pose1_config">[true, false, false,
+                                        false, false, false,
+                                        false, false, false,
+                                        false, false, false,
+                                        false, false, false]
+        </rosparam><!-- Fuse x position only since we are doing 1-D at the moment-->
+        <!-- Use differential mode to avoid oscillations if covariance is not large enough-->
+        <param name="pose0_differential" value="true"/>
+        <param name="pose1_differential" value="true"/>
+        <!-- Use relative mode otherwise-->
+        <param name="odom0_relative" value="true"/>
+        <!--param name="imu0_relative" value="true"/-->
+        <param name="imu0_remove_gravitational_acceleration" value="true"/>
+        <param name="print_diagnostics" value="true"/>
+    </node>
+
+    <!-- Main ROS node for turtlebot logic-->
     <node pkg="project1" type="stationary_turtlebot.py" name="robot"/>
 </launch>
