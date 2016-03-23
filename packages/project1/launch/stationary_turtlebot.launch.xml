@@ -1,0 +1,114 @@
+<launch>
+    <arg name="world_file"  default="$(env TURTLEBOT_GAZEBO_WORLD_FILE)"/>
+    <arg name="base"      value="$(optenv TURTLEBOT_BASE kobuki)"/> <!-- create, roomba -->
+    <arg name="battery"   value="$(optenv TURTLEBOT_BATTERY /proc/acpi/battery/BAT0)"/>  <!-- /proc/acpi/battery/BAT0 -->
+    <arg name="gui" default="true"/>
+    <arg name="stacks"    value="$(optenv TURTLEBOT_STACKS hexagons)"/>  <!-- circles, hexagons -->
+    <arg name="3d_sensor" value="$(optenv TURTLEBOT_3D_SENSOR kinect)"/>  <!-- kinect, asus_xtion_pro -->
+    <arg name="model_name" default="turtlebot"/>
+    <arg name="x_pos" default="0"/>
+    <arg name="y_pos" default="0"/>
+    <arg name="z_pos" default="0"/>
+    <arg name="yaw" default="0"/>
+
+    <param name="x_pos" type="double" value="$(arg x_pos)"/>
+    <param name="y_pos" type="double" value="$(arg y_pos)"/>
+    <param name="z_pos" type="double" value="$(arg z_pos)"/>
+
+    <!-- Launch the necessary Kobuki nodes for turtlebot operation-->
+    <include file="$(find project1)/launch/kobuki.launch.xml">
+        <arg name="base" value="$(arg base)"/>
+        <arg name="stacks" value="$(arg stacks)"/>
+        <arg name="3d_sensor" value="$(arg 3d_sensor)"/>
+        <arg name="model_name" value="$(arg model_name)"/>
+        <arg name="x_pos" value="$(arg x_pos)"/>
+        <arg name="y_pos" value="$(arg y_pos)"/>
+        <arg name="z_pos" value="$(arg z_pos)"/>
+        <arg name="yaw" value="$(arg yaw)"/>
+    </include>
+
+    <!-- Robot State Publisher for publishing tf status of turtlebot-->
+    <node pkg="robot_state_publisher" type="robot_state_publisher" name="robot_state_publisher">
+        <param name="publish_frequency" type="double" value="30.0" />
+        <param name="tf_prefix" type="string" value="$(arg model_name)"/>
+    </node>
+
+    <!-- Fake laser -->
+    <node pkg="nodelet" type="nodelet" name="laserscan_nodelet_manager" args="manager"/>
+    <node pkg="nodelet" type="nodelet" name="depthimage_to_laserscan"
+          args="load depthimage_to_laserscan/DepthImageToLaserScanNodelet laserscan_nodelet_manager">
+        <param name="scan_height" value="10"/>
+        <param name="output_frame_id" value="$(arg model_name)/camera_depth_frame"/>
+        <param name="range_min" value="0.45"/>
+        <remap from="image" to="camera/depth/image_raw"/>
+        <!--remap from="scan" to="scan"/-->
+    </node>
+
+    <!-- Robot Localization nodes-->
+    <node pkg="robot_localization" type="ekf_localization_node" name="ekf_localization" clear_params="true" output="screen">
+        <param name="frequency" value="30"/>
+        <param name="sensor_timeout"  value="0.1"/>
+        <param name="two_d_mode" value="true"/>
+        <!--param name="map_frame" value="map"/-->
+        <param name="odom_frame" value="$(arg model_name)/odom"/>
+        <param name="base_link_frame" value="$(arg model_name)/base_footprint_generated"/>
+        <!-- If this is .../base_footprint, I get this from roswtf:
+         ERROR TF multiple authority contention:
+         * node [/turtlebot2/ekf_localization] publishing transform [turtlebot2/base_footprint] with parent [turtlebot2/odom] already published by node [/gazebo]
+         * node [/gazebo] publishing transform [turtlebot2/base_footprint] with parent [turtlebot2/odom] already published by node [/turtlebot2/ekf_localization]
+         This is because Gazebo is publishing a transform from odom to base_footprint and so is ekf_localization
+         Also gets an error with transforming from base_link to base_footprint for the IMU messages, unsure of why this is, possibly due to the multiple authority contention-->
+        <!-- If this is .../base_footprint_generated:
+        roswtf returns no errors. However the IMU is still not happy. The IMU's frame is base_link, and there is no transform from base_footprint_generated to base_link.
+        Can't publish a transform from base_link to base_footprint_generated because then base_link would have two parents.
+        Possible solution is to create a copy of the IMU data and change the frame_id to base_link_generated, and then give it the same transform as the real robot-->
+        <remap from="$(arg model_name)/base_footprint" to="$(arg model_name)/base_footprint_generated"/> 
+        <param name="world_frame" value="$(arg model_name)/odom"/>
+        <param name="transform_time_offset" value="0.0"/>
+        <param name="odom0" value="odom_remapped"/> <!-- Internal odometry-->
+        <param name="imu0" value="imu_data_remapped"/> <!-- Internal IMU-->
+        <param name="pose0" value="external_readings/pose0"/> <!-- 1st external pose calculation-->
+        <param name="pose1" value="external_readings/pose1"/> <!-- 2nd external pose calculation-->
+        <rosparam param="odom0_config">[false, false, false,
+                                        false, false, false,
+                                        true, true, false,
+                                        false, false, true,
+                                        false, false, false]
+        </rosparam><!-- Fuse x velocity, y velocity and yaw velocity from odometry as suggested by sensor configuration tutorial-->
+        <rosparam param="imu0_config">[false, false, false,
+                                    false, false, true,
+                                    false, false, false,
+                                    false, false, true,
+                                    true, false, false]
+        </rosparam><!-- Fuse yaw, yaw velocity, and x acceleration from the IMU-->
+        <rosparam param="pose0_config">[true, false, false,
+                                        false, false, false,
+                                        false, false, false,
+                                        false, false, false,
+                                        false, false, false]
+        </rosparam><!-- Fuse x position only since we are doing 1-D at the moment-->
+                <rosparam param="pose1_config">[true, false, false,
+                                        false, false, false,
+                                        false, false, false,
+                                        false, false, false,
+                                        false, false, false]
+        </rosparam><!-- Fuse x position only since we are doing 1-D at the moment-->
+        <!-- Use differential mode to avoid oscillations if covariance is not large enough-->
+        <param name="pose0_differential" value="true"/>
+        <param name="pose1_differential" value="true"/>
+        <!-- Use relative mode otherwise-->
+        <param name="odom0_relative" value="true"/>
+        <!--param name="imu0_relative" value="true"/-->
+        <param name="imu0_remove_gravitational_acceleration" value="true"/>
+        <param name="print_diagnostics" value="true"/>
+    </node>
+
+    <!-- Main ROS node for turtlebot logic-->
+    <node pkg="project1" type="stationary_turtlebot.py" name="robot"/>
+
+    <!-- Remap IMU messages to new topic-->
+    <node pkg="project1" type="sensor_remap.py" name="sensor_remap"/>
+
+    <!-- Static transform for base_link_remapped to base_footprint_generated-->
+    <node pkg="tf" type="static_transform_publisher" name="imu_remap_transform" args="0 0 -0.1 0 0 0 $(arg model_name)/base_footprint_generated $(arg model_name)/base_link_generated 100"/>
+</launch>
