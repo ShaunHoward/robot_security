@@ -1,0 +1,55 @@
+<!-- A combination of turtlebot_gazebo and turtlebot_bringup launch files for the Kobuki base-->
+
+<launch>
+    <arg name="base"/>
+    <arg name="stacks"/>
+    <arg name="3d_sensor"/>
+    <arg name="model_name" default="mobile_base"/>
+    <arg name="x_pos" default="0"/>
+    <arg name="y_pos" default="0"/>
+    <arg name="z_pos" default="0"/>
+    <arg name="yaw" default="0"/>
+
+    <arg name="urdf_file" default="$(find xacro)/xacro.py '$(find turtlebot_description)/robots/$(arg base)_$(arg stacks)_$(arg 3d_sensor).urdf.xacro'" />
+  
+    <!-- Gazebo model spawner -->
+    <param name="robot_description" command="$(arg urdf_file)" />
+    <node name="spawn_turtlebot_model" pkg="gazebo_ros" type="spawn_model"
+        args="$(optenv robot_initial_pose)
+            -unpause
+            -urdf 
+            -param robot_description
+            -model $(arg model_name)
+            -x $(arg x_pos)
+            -y $(arg y_pos)
+            -z $(arg z_pos)
+            -Y $(arg yaw)"/>
+
+        
+    <!-- Velocity muxer -->
+    <node pkg="nodelet" type="nodelet" name="mobile_base_nodelet_manager" args="manager"/>
+    <node pkg="nodelet" type="nodelet" name="cmd_vel_mux"
+        args="load yocs_cmd_vel_mux/CmdVelMuxNodelet mobile_base_nodelet_manager">
+        <param name="yaml_cfg_file" value="$(find turtlebot_bringup)/param/mux.yaml" />
+        <remap from="cmd_vel_mux/output" to="mobile_base/commands/velocity"/>
+    </node>
+
+    <!-- Mobile Base nodelet-->
+    <!-- Only need to enable this if not using Gazebo-->
+    <!--node pkg="nodelet" type="nodelet" name="mobile_base" args="load kobuki_node/KobukiNodelet mobile_base_nodelet_manager"-->
+        <!--rosparam file="$(find kobuki_node)/param/base.yaml" command="load"/-->
+        <!--param name="publish_tf" value="false"/--> <!-- Because we are using the robot_localization package-->
+        <!--param name="use_imu_heading" value="false"/--> <!-- Because we are using the robot_localization package-->
+    <!--/node-->
+
+    <!--
+    <param name="robot/name" value="$(optenv ROBOT turtlebot)"/>
+    <param name="robot/type" value="turtlebot"/-->
+
+    <node pkg="diagnostic_aggregator" type="aggregator_node" name="diagnostic_aggregator">
+        <rosparam command="load" file="$(find turtlebot_bringup)/param/$(arg base)/diagnostics.yaml"/>
+    </node>
+
+  <!-- Bumper/cliff to pointcloud (not working, as it needs sensors/core messages) -->
+  <include file="$(find turtlebot_bringup)/launch/includes/kobuki/bumper2pc.launch.xml"/>
+</launch>

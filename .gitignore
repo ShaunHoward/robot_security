@@ -120,6 +120,7 @@ CATKIN_IGNORE
 *.log
 *.synctex.gz
 *.tex
+*.pdf
 
 # YouCompleteMe config
 .ycm_extra_conf.py

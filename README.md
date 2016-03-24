@@ -18,3 +18,9 @@ The input of n-1 sensors affected by terroristic activities can be accurately pr
 2. after gazebo open control turtle bot with keyboard: roslaunch turtlebot_teleop keyboard_teleop.launch
 3. run rviz: roslaunch turtlebot_rviz_launchers view_robot.launch
 - Note: this will only work if ros indigo and turtlebot simulators are properly installed.
+
+# To launch multi-robot simulation in Gazebo
+- roslaunch project1 turtlebot_world.launch
+- rosrun rviz rviz
+- After opening Rviz select the the base_link of whichever robot you would like to view (turtlebot1, turtlebot2, turtlebot3).
+- Then add a RobotModel, and change the robot_description to "robot name"/robot_description (e.g. turtlebot1/robot_description) and change the tf_prefix to "robot_name/" (e.g. turtlebot1/)
