@@ -22,7 +22,7 @@ def run_robots(n=3, goal_states=GOAL_STATES):
         # only do robot if robot has goal
         if squirtle.goal is not None:
             # read squirtle's sensor
-            (odom_x, odom_y) = squirtle.my_odom_pos
+            (odom_x, odom_y) = squirtle.my_filtered_odom_pos
 
             # read other robot's sensors in reference to squirtle and add good reading in
             perturbed_xy = [pf.add_some_noise(odom_x, odom_y) for i in range(n)] + [(odom_x, odom_y)]
