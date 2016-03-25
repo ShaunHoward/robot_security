@@ -18,16 +18,14 @@
             <arg name="model_name" value="turtlebot1"/>
             <arg name="x_pos" value="0"/>
             <arg name="y_pos" value="0"/>
-            <arg name="z_pos" value="0"/>
         </include>
     </group> 
 
     <group ns="turtlebot2">
-        <include file="$(find project1)/launch/stationary_turtlebot.launch.xml">
+        <include file="$(find project1)/launch/turtlebot_1d.launch.xml">
             <arg name="model_name" value="turtlebot2"/>
             <arg name="x_pos" value="4"/>
             <arg name="y_pos" value="0"/>
-            <arg name="z_pos" value="0"/>
         </include>
     </group> 
 
@@ -36,7 +34,6 @@
             <arg name="model_name" value="turtlebot3"/>
             <arg name="x_pos" value="6"/>
             <arg name="y_pos" value="0"/>
-            <arg name="z_pos" value="0"/>
             <arg name="yaw" value="3.14159"/>
         </include>
     </group> 
