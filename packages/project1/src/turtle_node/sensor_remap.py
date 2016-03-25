@@ -11,7 +11,7 @@ namespace = rospy.get_namespace()[1:]
 
 def imu_remap(imu_msg):
     remapped_msg = imu_msg
-    remapped_msg.header.frame_id = namespace + 'base_link_generated'
+    remapped_msg.header.frame_id = namespace + 'base_link_self'
     try:
         imu_publisher.publish(remapped_msg)
     except rospy.ROSException as e:
@@ -20,7 +20,7 @@ def imu_remap(imu_msg):
 
 def odom_remap(odom_msg):
     remapped_msg = odom_msg
-    remapped_msg.child_frame_id = namespace + 'base_footprint_generated'
+    remapped_msg.child_frame_id = namespace + 'base_footprint_self'
     odom_publisher.publish(remapped_msg)
 
 

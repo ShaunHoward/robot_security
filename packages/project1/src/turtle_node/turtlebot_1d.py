@@ -85,6 +85,7 @@ class TurtleBot1D(TurtleBot, object):
             self.covariance11[0] = self.robot_1_distance.scan.variance
             self.pose11.pose.covariance = self.covariance11
             self.pose11.header.stamp = rospy.get_rostime()
+            # TODO need to make this publish twice, once for base_footprint_self and other time for base_footprint_distributed
             self.pose11.header.frame_id = 'turtlebot2/base_footprint_generated'
             self.pose_wrt_1_from_1.publish(self.pose11)
         else:
