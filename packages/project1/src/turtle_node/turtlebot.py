@@ -1,9 +1,10 @@
 #!/usr/bin/env python
 
 import rospy
-from std_msgs.msg import Float32
+import numpy
 from sensor_msgs.msg import LaserScan
 from geometry_msgs.msg import Pose2D
+from project1.msg import ScanWithVariance, ScanWithVarianceStamped
 
 
 class TurtleBot:
@@ -26,7 +27,7 @@ class TurtleBot:
         self.position_publisher.publish(self.pose)
 
         self.scan_received = False  # We haven't received a valid LaserScan yet
-        self.scan_distance = None
+        self.processed_scan = None
 
         self.speed = speed
         self.rate = rospy.Rate(rate)
@@ -39,8 +40,8 @@ class TurtleBot:
                                                  self.scan_callback)
 
     def initialize_publishers(self):
-        self.distance_publisher = rospy.Publisher('scan_average',
-                                                  Float32,
+        self.processed_scan_publisher = rospy.Publisher('processed_scan',
+                                                  ScanWithVarianceStamped,
                                                   queue_size=1)
 
         self.position_publisher = rospy.Publisher('position',
@@ -58,20 +59,34 @@ class TurtleBot:
             self.range_min = scan_msg.range_min
             self.range_max = scan_msg.range_max
 
-        particle_number = 0  # how many valid particles have we received?
-        particle_sum = 0   # going to calculate the average distance
+        # First throw out invalid particles
+        valid_particles = []
         for particle in scan_msg.ranges:
             if self.range_min < particle < self.range_max:
-                particle_sum += particle
-                particle_number += 1
+                valid_particles.append(particle)
 
-        if particle_number is not 0:
-            average_distance = particle_sum / particle_number
+        # Now calculate sample mean and variance
+        if len(valid_particles) is not 0:
+            sample_mean = numpy.mean(valid_particles)
+            sample_variance = numpy.var(valid_particles)
         else:
-            average_distance = self.range_max
+            sample_mean = 0
+            sample_variance = 0
 
-        self.scan_distance = average_distance
-        self.distance_publisher.publish(average_distance)
+        scan = ScanWithVariance()
+        scan.mean = sample_mean
+        scan.variance = sample_variance
+
+        self.processed_scan = self.stamp_scan_w_variance(scan)
+        self.processed_scan_publisher.publish(self.processed_scan)
+
+    @staticmethod
+    def stamp_scan_w_variance(scan_w_variance):
+        stamped_scan_w_variance = ScanWithVarianceStamped()
+        stamped_scan_w_variance.scan = scan_w_variance
+        stamped_scan_w_variance.header.stamp = rospy.get_rostime()
+
+        return stamped_scan_w_variance
 
 
 def main():
