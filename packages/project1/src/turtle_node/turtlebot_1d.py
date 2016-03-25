@@ -21,7 +21,9 @@ class TurtleBot1D(TurtleBot, object):
         self.pose11 = PoseWithCovarianceStamped()
         self.pose33 = PoseWithCovarianceStamped()
         self.pose32 = PoseWithCovarianceStamped()
-        self.covariance = [0] * 36
+        self.covariance11 = [0] * 36
+        self.covariance33 = [0] * 36
+        self.covariance32 = [0] * 36
         self.initialize_extra_subscribers()
         self.initialize_extra_publishers()
 
@@ -80,8 +82,8 @@ class TurtleBot1D(TurtleBot, object):
         if self.robot_1_distance is not None and self.robot_1_position is not None:
             self.pose11.pose.pose.position.x = self.robot_1_position.x + self.robot_1_distance.scan.mean
             # TODO add distance from edge to center of turtlebot to this calculation and kinect to center
-            self.covariance[0] = self.robot_1_distance.scan.variance
-            self.pose11.pose.covariance = self.covariance
+            self.covariance11[0] = self.robot_1_distance.scan.variance
+            self.pose11.pose.covariance = self.covariance11
             self.pose11.header.stamp = rospy.get_rostime()
             self.pose11.header.frame_id = 'turtlebot2/base_footprint_generated'
             self.pose_wrt_1_from_1.publish(self.pose11)
@@ -95,18 +97,23 @@ class TurtleBot1D(TurtleBot, object):
         if self.robot_3_distance is not None and self.robot_3_position is not None:
             self.pose33.pose.pose.position.x = self.robot_3_distance.scan.mean - self.robot_3_position.x
             # TODO add distance from edge to center of turtlebot to this calculation and kinect to center
-            self.covariance[0] = self.robot_1_distance.scan.variance
-            self.pose11.pose.covariance = self.covariance
+            self.covariance33[0] = self.robot_3_distance.scan.variance
+            self.pose33.pose.covariance = self.covariance33
             self.pose33.header.stamp = rospy.get_rostime()
             self.pose33.header.frame_id = 'turtlebot2/base_footprint_generated'
             self.pose_wrt_3_from_3.publish(self.pose33)
+        else:
+            if self.robot_3_distance is None:
+                rospy.loginfo("Didn't update pose_33 because robot_3_distance = None")
+            if self.robot_3_position is None:
+                rospy.loginfo("Didn't update pose_33 because robot_3_position = None")
 
     def update_pose_32(self):
         if self.processed_scan is not None and self.robot_3_position is not None:
             self.pose32.pose.pose.position.x = self.robot_3_position.x - self.processed_scan.scan.mean
             # TODO add distance from edge to center of turtlebot to this calculation and kinect to center
-            self.covariance[0] = self.robot_1_distance.scan.variance
-            self.pose11.pose.covariance = self.covariance
+            self.covariance32[0] = self.processed_scan.scan.variance
+            self.pose11.pose.covariance = self.covariance32
             self.pose32.header.stamp = rospy.get_rostime()
             self.pose32.header.frame_id = 'turtlebot2/base_footprint_generated'
             self.pose_wrt_3_from_2.publish(self.pose32)
