@@ -24,10 +24,11 @@ class TurtleBot1D(TurtleBot, object):
         self.covariance11 = [0] * 36
         self.covariance33 = [0] * 36
         self.covariance32 = [0] * 36
-        self.initialize_extra_subscribers()
-        self.initialize_extra_publishers()
+        self.initialize_subscribers()
+        self.initialize_publishers()
 
-    def initialize_extra_publishers(self):
+    def initialize_publishers(self):
+        super(TurtleBot1D, self).initialize_publishers()
         self.cmd_vel_pub = rospy.Publisher('cmd_vel_mux/input/navi', Twist,
                                            queue_size=1)
 
@@ -39,11 +40,18 @@ class TurtleBot1D(TurtleBot, object):
                                                  PoseWithCovarianceStamped,
                                                  queue_size=1)
 
-        self.pose_wrt_3_from_2 = rospy.Publisher('pose33',
-                                                 PoseWithCovarianceStamped,
-                                                 queue_size=1)
+        self.pose_wrt_3_from_2_distributed = rospy.Publisher(
+            'pose32_distributed',
+            PoseWithCovarianceStamped,
+            queue_size=1)
 
-    def initialize_extra_subscribers(self):
+        self.pose_wrt_3_from_2_self = rospy.Publisher(
+            'pose32_self',
+             PoseWithCovarianceStamped,
+             queue_size=1)
+
+    def initialize_subscribers(self):
+        super(TurtleBot1D, self).initialize_subscribers()
         self.robot_1_dist = rospy.Subscriber('/turtlebot1/processed_scan',
                                              ScanWithVarianceStamped,
                                              self.robot_1_dist_cb)
@@ -85,8 +93,7 @@ class TurtleBot1D(TurtleBot, object):
             self.covariance11[0] = self.robot_1_distance.scan.variance
             self.pose11.pose.covariance = self.covariance11
             self.pose11.header.stamp = rospy.get_rostime()
-            # TODO need to make this publish twice, once for base_footprint_self and other time for base_footprint_distributed
-            self.pose11.header.frame_id = 'turtlebot2/base_footprint_generated'
+            self.pose11.header.frame_id = 'turtlebot2/base_link_distributed'
             self.pose_wrt_1_from_1.publish(self.pose11)
         else:
             if self.robot_1_distance is None:
@@ -101,7 +108,7 @@ class TurtleBot1D(TurtleBot, object):
             self.covariance33[0] = self.robot_3_distance.scan.variance
             self.pose33.pose.covariance = self.covariance33
             self.pose33.header.stamp = rospy.get_rostime()
-            self.pose33.header.frame_id = 'turtlebot2/base_footprint_generated'
+            self.pose33.header.frame_id = 'turtlebot2/base_link_distributed'
             self.pose_wrt_3_from_3.publish(self.pose33)
         else:
             if self.robot_3_distance is None:
@@ -114,10 +121,12 @@ class TurtleBot1D(TurtleBot, object):
             self.pose32.pose.pose.position.x = self.robot_3_position.x - self.processed_scan.scan.mean
             # TODO add distance from edge to center of turtlebot to this calculation and kinect to center
             self.covariance32[0] = self.processed_scan.scan.variance
-            self.pose11.pose.covariance = self.covariance32
+            self.pose32.pose.covariance = self.covariance32
             self.pose32.header.stamp = rospy.get_rostime()
-            self.pose32.header.frame_id = 'turtlebot2/base_footprint_generated'
-            self.pose_wrt_3_from_2.publish(self.pose32)
+            self.pose32.header.frame_id = 'turtlebot2/base_link_distributed'
+            self.pose_wrt_3_from_2_distributed.publish(self.pose32)
+            self.pose32.header.frame_id = 'turtlebot2/base_link_self'
+            self.pose_wrt_3_from_2_self.publish(self.pose32)
 
     def move(self, amount, lower_bound=1, upper_bound=3):
         goal_x = self.pose.x + amount

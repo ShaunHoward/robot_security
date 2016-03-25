@@ -51,13 +51,14 @@
         <param name="base_link_frame" value="$(arg model_name)/base_footprint_self"/>
         <param name="world_frame" value="$(arg model_name)/odom"/>
         <param name="transform_time_offset" value="0.0"/>
-        <param name="pose0" value="pose32"/> <!-- 1st external pose calculation-->
-        <rosparam param="pose0_config">[true, false, false,
-                                        false, false, false,
+        <param name="pose0" value="pose32_self"/> <!-- 1st external pose calculation-->
+        <rosparam param="pose0_config">[true, true, false,
+                                        false, false, true,
                                         false, false, false,
                                         false, false, false,
                                         false, false, false]
         </rosparam><!-- Fuse x position only since we are doing 1-D at the moment-->
+        <!-- Also have to fuse y and yaw since filter complains otherwise, but we'll ignore-->
         <!-- Use differential mode to avoid oscillations if covariance is not large enough-->
         <param name="pose0_differential" value="true"/>
         <param name="print_diagnostics" value="true"/>
@@ -71,11 +72,11 @@
         <param name="odom_frame" value="$(arg model_name)/odom"/>
         <param name="base_link_frame" value="$(arg model_name)/base_footprint_distributed"/>
         <param name="world_frame" value="$(arg model_name)/odom"/>
-        <param name="pose0" value="pose32"/> <!-- 1st external pose calculation-->
+        <param name="pose0" value="pose32_distributed"/> <!-- 1st external pose calculation-->
         <param name="pose1" value="pose11"/> <!-- 2nd external pose calculation-->
         <param name="pose2" value="pose33"/> <!-- 3rd external pose calculation-->
-        <rosparam param="pose0_config">[true, false, false,
-                                        false, false, false,
+        <rosparam param="pose0_config">[true, true, false,
+                                        false, false, true,
                                         false, false, false,
                                         false, false, false,
                                         false, false, false]
