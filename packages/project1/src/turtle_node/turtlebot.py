@@ -9,6 +9,8 @@ from geometry_msgs.msg import Pose2D
 class TurtleBot:
 
     def __init__(self, speed=0.2, rate=10):
+        rospy.init_node('robot')
+
         x_pos = rospy.get_param('x_pos')
         y_pos = rospy.get_param('y_pos')
         yaw = rospy.get_param('yaw')
@@ -24,16 +26,12 @@ class TurtleBot:
         self.position_publisher.publish(self.pose)
 
         self.scan_received = False  # We haven't received a valid LaserScan yet
+        self.scan_distance = None
 
         self.speed = speed
         self.rate = rospy.Rate(rate)
 
         self.namespace = rospy.get_namespace()
-
-        self.start()
-
-    def start(self):
-        rospy.init_node('robot')
 
     def initialize_subscribers(self):
         self.lidar_subscriber = rospy.Subscriber('scan',
@@ -72,6 +70,7 @@ class TurtleBot:
         else:
             average_distance = self.range_max
 
+        self.scan_distance = average_distance
         self.distance_publisher.publish(average_distance)
 
 

@@ -3,7 +3,8 @@
 import rospy
 from turtlebot import TurtleBot
 
-class StationaryTurtlebot(TurtleBot, object):
+
+class StationaryTurtleBot(TurtleBot, object):
 
     def __init__(self):
         super(StationaryTurtleBot, self).__init__()
@@ -16,8 +17,9 @@ class StationaryTurtlebot(TurtleBot, object):
     def stop():
         rospy.logwarn('I am stationary! You can\'t stop me')
 
+
 def main():
-    robot = StationaryTurtlebot()
+    robot = StationaryTurtleBot()
 
     while not rospy.is_shutdown():
         rospy.spin()
