@@ -108,5 +108,5 @@
     <node pkg="project1" type="sensor_remap.py" name="sensor_remap"/>
 
     <!-- Static transform for base_link_remapped to base_footprint_generated-->
-    <node pkg="tf" type="static_transform_publisher" name="imu_remap_transform" args="0 0 -0.1 0 0 0 $(arg model_name)/base_footprint_generated $(arg model_name)/base_link_generated 100"/>
+    <node pkg="tf" type="static_transform_publisher" name="imu_remap_transform" args="0 0 0.01 0 0 0 1 $(arg model_name)/base_footprint_generated $(arg model_name)/base_link_generated 100"/>
 </launch>
