@@ -102,7 +102,7 @@
     </node>
 
     <!-- Main ROS node for turtlebot logic-->
-    <node pkg="project1" type="stationary_turtlebot.py" name="robot"/>
+    <node pkg="project1" type="turtlebot_1d.py" name="robot"/>
 
     <!-- Remap sensor messages to new topic-->
     <node pkg="project1" type="sensor_remap.py" name="sensor_remap"/>
