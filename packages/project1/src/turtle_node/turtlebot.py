@@ -3,29 +3,52 @@
 import rospy
 from std_msgs.msg import Float32
 from sensor_msgs.msg import LaserScan
+from geometry_msgs.msg import Pose2D
 
 
-class StationaryTurtlebot:
+class TurtleBot:
 
-    def __init__(self, x_pos):
-        self.x = Float32()
-        self.x.data = x_pos
+    def __init__(self, speed=0.2, rate=10):
+        x_pos = rospy.get_param('x_pos')
+        y_pos = rospy.get_param('y_pos')
+        yaw = rospy.get_param('yaw')
 
-        self.distance_publisher = rospy.Publisher('distance_to_mobile_bot',
-                                                  Float32,
-                                                  queue_size=1)
+        self.pose = Pose2D()
+        self.pose.x = x_pos
+        self.pose.y = y_pos
+        self.pose.theta = yaw
 
-        self.position_publisher = rospy.Publisher('position',
-                                                  Float32,
-                                                  queue_size=1,
-                                                  latch=True)
-        self.position_publisher.publish(self.x)
+        self.initialize_subscribers()
+        self.initialize_publishers()
 
+        self.position_publisher.publish(self.pose)
+
+        self.scan_received = False  # We haven't received a valid LaserScan yet
+
+        self.speed = speed
+        self.rate = rospy.Rate(rate)
+
+        self.namespace = rospy.get_namespace()
+
+        self.start()
+
+    def start(self):
+        rospy.init_node('robot')
+
+    def initialize_subscribers(self):
         self.lidar_subscriber = rospy.Subscriber('scan',
                                                  LaserScan,
                                                  self.scan_callback)
 
-        self.scan_received = False
+    def initialize_publishers(self):
+        self.distance_publisher = rospy.Publisher('scan_average',
+                                                  Float32,
+                                                  queue_size=1)
+
+        self.position_publisher = rospy.Publisher('position',
+                                                  Pose2D,
+                                                  queue_size=1,
+                                                  latch=True)
 
     def scan_callback(self, scan_msg):
         if not self.scan_received:
@@ -54,8 +77,8 @@ class StationaryTurtlebot:
 
 def main():
     rospy.init_node('robot')
-    x_pos = rospy.get_param('x_pos')
-    robot = StationaryTurtlebot(x_pos)
+
+    robot = TurtleBot()
 
     while not rospy.is_shutdown():
         rospy.spin()
