@@ -15,7 +15,7 @@ class TurtleBot1D(TurtleBot, object):
                                            queue_size=1)
         rospy.on_shutdown(self.stop)
 
-    def move_on_x(self, amount, lower_bound=1, upper_bound=5):
+    def move(self, amount, lower_bound=1, upper_bound=5):
         goal_x = self.pose.x + amount
 
         within_bounds = helpers.check_bounds(goal_x, lower_bound, upper_bound)
