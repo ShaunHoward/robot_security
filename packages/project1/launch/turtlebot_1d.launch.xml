@@ -43,49 +43,51 @@
     </node>
 
     <!-- Robot Localization nodes-->
-    <node pkg="robot_localization" type="ekf_localization_node" name="ekf_localization" clear_params="true" output="screen">
+    <node pkg="robot_localization" type="ekf_localization_node" name="ekf_self" clear_params="true" output="screen">
         <param name="frequency" value="30"/>
         <param name="sensor_timeout"  value="0.1"/>
         <param name="two_d_mode" value="true"/>
-        <!--param name="map_frame" value="map"/-->
         <param name="odom_frame" value="$(arg model_name)/odom"/>
-        <param name="base_link_frame" value="$(arg model_name)/base_footprint_generated"/>
-        <!-- If this is .../base_footprint, I get this from roswtf:
-         ERROR TF multiple authority contention:
-         * node [/turtlebot2/ekf_localization] publishing transform [turtlebot2/base_footprint] with parent [turtlebot2/odom] already published by node [/gazebo]
-         * node [/gazebo] publishing transform [turtlebot2/base_footprint] with parent [turtlebot2/odom] already published by node [/turtlebot2/ekf_localization]
-         This is because Gazebo is publishing a transform from odom to base_footprint and so is ekf_localization
-         Also gets an error with transforming from base_link to base_footprint for the IMU messages, unsure of why this is, possibly due to the multiple authority contention-->
-        <!-- If this is .../base_footprint_generated:
-        roswtf returns no errors. However the IMU is still not happy. The IMU's frame is base_link, and there is no transform from base_footprint_generated to base_link.
-        Can't publish a transform from base_link to base_footprint_generated because then base_link would have two parents.
-        Possible solution is to create a copy of the IMU data and change the frame_id to base_link_generated, and then give it the same transform as the real robot-->
-        <remap from="$(arg model_name)/base_footprint" to="$(arg model_name)/base_footprint_generated"/> 
+        <param name="base_link_frame" value="$(arg model_name)/base_footprint_self"/>
         <param name="world_frame" value="$(arg model_name)/odom"/>
         <param name="transform_time_offset" value="0.0"/>
-        <param name="odom0" value="odom_remapped"/> <!-- Internal odometry-->
-        <param name="imu0" value="imu_data_remapped"/> <!-- Internal IMU-->
-        <param name="pose0" value="external_readings/pose0"/> <!-- 1st external pose calculation-->
-        <param name="pose1" value="external_readings/pose1"/> <!-- 2nd external pose calculation-->
-        <rosparam param="odom0_config">[false, false, false,
-                                        false, false, false,
-                                        true, true, false,
+        <param name="pose0" value="pose32_self"/> <!-- 1st external pose calculation-->
+        <rosparam param="pose0_config">[true, true, false,
                                         false, false, true,
+                                        false, false, false,
+                                        false, false, false,
                                         false, false, false]
-        </rosparam><!-- Fuse x velocity, y velocity and yaw velocity from odometry as suggested by sensor configuration tutorial-->
-        <rosparam param="imu0_config">[false, false, false,
-                                    false, false, true,
-                                    false, false, false,
-                                    false, false, true,
-                                    true, false, false]
-        </rosparam><!-- Fuse yaw, yaw velocity, and x acceleration from the IMU-->
-        <rosparam param="pose0_config">[true, false, false,
+        </rosparam><!-- Fuse x position only since we are doing 1-D at the moment-->
+        <!-- Also have to fuse y and yaw since filter complains otherwise, but we'll ignore-->
+        <!-- Use differential mode to avoid oscillations if covariance is not large enough-->
+        <param name="pose0_differential" value="true"/>
+        <param name="print_diagnostics" value="true"/>
+    </node>
+
+        <!-- Robot Localization nodes-->
+    <node pkg="robot_localization" type="ekf_localization_node" name="ekf_distributed" clear_params="true" output="screen">
+        <param name="frequency" value="30"/>
+        <param name="sensor_timeout"  value="0.1"/>
+        <param name="two_d_mode" value="true"/>
+        <param name="odom_frame" value="$(arg model_name)/odom"/>
+        <param name="base_link_frame" value="$(arg model_name)/base_footprint_distributed"/>
+        <param name="world_frame" value="$(arg model_name)/odom"/>
+        <param name="pose0" value="pose32_distributed"/> <!-- 1st external pose calculation-->
+        <param name="pose1" value="pose11"/> <!-- 2nd external pose calculation-->
+        <param name="pose2" value="pose33"/> <!-- 3rd external pose calculation-->
+        <rosparam param="pose0_config">[true, true, false,
+                                        false, false, true,
+                                        false, false, false,
+                                        false, false, false,
+                                        false, false, false]
+        </rosparam><!-- Fuse x position only since we are doing 1-D at the moment-->
+        <rosparam param="pose1_config">[true, false, false,
                                         false, false, false,
                                         false, false, false,
                                         false, false, false,
                                         false, false, false]
         </rosparam><!-- Fuse x position only since we are doing 1-D at the moment-->
-                <rosparam param="pose1_config">[true, false, false,
+        <rosparam param="pose2_config">[true, false, false,
                                         false, false, false,
                                         false, false, false,
                                         false, false, false,
@@ -94,10 +96,7 @@
         <!-- Use differential mode to avoid oscillations if covariance is not large enough-->
         <param name="pose0_differential" value="true"/>
         <param name="pose1_differential" value="true"/>
-        <!-- Use relative mode otherwise-->
-        <param name="odom0_relative" value="true"/>
-        <!--param name="imu0_relative" value="true"/-->
-        <param name="imu0_remove_gravitational_acceleration" value="true"/>
+        <param name="pose2_differential" value="true"/>
         <param name="print_diagnostics" value="true"/>
     </node>
 
@@ -105,8 +104,10 @@
     <node pkg="project1" type="turtlebot_1d.py" name="robot" output="screen"/>
 
     <!-- Remap sensor messages to new topic-->
-    <node pkg="project1" type="sensor_remap.py" name="sensor_remap"/>
+    <!-- Only need this if using odom and IMU-->
+    <!--node pkg="project1" type="sensor_remap.py" name="sensor_remap"/-->
 
     <!-- Static transform for base_link_remapped to base_footprint_generated-->
-    <node pkg="tf" type="static_transform_publisher" name="imu_remap_transform" args="0 0 -0.1 0 0 0 $(arg model_name)/base_footprint_generated $(arg model_name)/base_link_generated 100"/>
+    <node pkg="tf" type="static_transform_publisher" name="self_frame_transform" args="0 0 0.01 0 0 0 1 $(arg model_name)/base_footprint_self $(arg model_name)/base_link_self 100"/>
+        <node pkg="tf" type="static_transform_publisher" name="distributed_frame_transform" args="0 0 0.01 0 0 0 1 $(arg model_name)/base_footprint_distributed $(arg model_name)/base_link_distributed 100"/>
 </launch>
