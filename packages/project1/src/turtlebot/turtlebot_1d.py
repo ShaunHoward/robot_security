@@ -157,4 +157,5 @@ if __name__ == '__main__':
     try:
         main()
     except rospy.ROSInterruptException:
+        print "exiting turtl"
         pass
