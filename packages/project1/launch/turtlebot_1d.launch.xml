@@ -44,6 +44,7 @@
 
     <!-- Robot Localization nodes-->
     <node pkg="robot_localization" type="ekf_localization_node" name="ekf_self" clear_params="true" output="screen">
+        <remap from="odometry/filtered" to="odometry/filtered_self"/>
         <param name="frequency" value="30"/>
         <param name="sensor_timeout"  value="0.1"/>
         <param name="two_d_mode" value="true"/>
@@ -51,7 +52,7 @@
         <param name="base_link_frame" value="$(arg model_name)/base_footprint_self"/>
         <param name="world_frame" value="$(arg model_name)/odom"/>
         <param name="transform_time_offset" value="0.0"/>
-        <param name="pose0" value="pose32_self"/> <!-- 1st external pose calculation-->
+        <param name="pose0" value="pose32"/> <!-- 1st external pose calculation-->
         <rosparam param="pose0_config">[true, true, false,
                                         false, false, true,
                                         false, false, false,
@@ -66,13 +67,14 @@
 
         <!-- Robot Localization nodes-->
     <node pkg="robot_localization" type="ekf_localization_node" name="ekf_distributed" clear_params="true" output="screen">
+                <remap from="odometry/filtered" to="odometry/filtered_distributed"/>
         <param name="frequency" value="30"/>
         <param name="sensor_timeout"  value="0.1"/>
         <param name="two_d_mode" value="true"/>
         <param name="odom_frame" value="$(arg model_name)/odom"/>
         <param name="base_link_frame" value="$(arg model_name)/base_footprint_distributed"/>
         <param name="world_frame" value="$(arg model_name)/odom"/>
-        <param name="pose0" value="pose32_distributed"/> <!-- 1st external pose calculation-->
+        <param name="pose0" value="pose32"/> <!-- 1st external pose calculation-->
         <param name="pose1" value="pose11"/> <!-- 2nd external pose calculation-->
         <param name="pose2" value="pose33"/> <!-- 3rd external pose calculation-->
         <rosparam param="pose0_config">[true, true, false,
@@ -109,5 +111,5 @@
 
     <!-- Static transform for base_link_remapped to base_footprint_generated-->
     <node pkg="tf" type="static_transform_publisher" name="self_frame_transform" args="0 0 0.01 0 0 0 1 $(arg model_name)/base_footprint_self $(arg model_name)/base_link_self 100"/>
-        <node pkg="tf" type="static_transform_publisher" name="distributed_frame_transform" args="0 0 0.01 0 0 0 1 $(arg model_name)/base_footprint_distributed $(arg model_name)/base_link_distributed 100"/>
+    <node pkg="tf" type="static_transform_publisher" name="distributed_frame_transform" args="0 0 0.01 0 0 0 1 $(arg model_name)/base_footprint_distributed $(arg model_name)/base_link_distributed 100"/>
 </launch>
