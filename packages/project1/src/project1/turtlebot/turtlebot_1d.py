@@ -1,12 +1,14 @@
 #!/usr/bin/env python
 
 import rospy
-import math
 import helpers
+import math
 import random
+
 from geometry_msgs.msg import Twist, Pose2D, PoseWithCovarianceStamped
 from turtlebot import TurtleBot
 from project1.msg import ScanWithVarianceStamped
+from nav_msgs.msg import Odometry
 
 
 class TurtleBot1D(TurtleBot, object):
@@ -26,6 +28,7 @@ class TurtleBot1D(TurtleBot, object):
         self.covariance11 = [0] * 36
         self.covariance33 = [0] * 36
         self.covariance32 = [0] * 36
+        self.odom_pose = None
         self.initialize_subscribers()
         self.initialize_publishers()
 
@@ -62,6 +65,8 @@ class TurtleBot1D(TurtleBot, object):
         self.robot_3_pos = rospy.Subscriber('/turtlebot3/position', Pose2D,
                                             self.robot_3_pos_cb)
 
+        self.odom_sub = rospy.Subscriber('odom', Odometry, self.odom_cb)
+
     def scan_callback(self, scan_msg):
         super(TurtleBot1D, self).scan_callback(scan_msg)
         self.update_pose_32()
@@ -81,6 +86,9 @@ class TurtleBot1D(TurtleBot, object):
 
     def robot_3_pos_cb(self, position):
         self.robot_3_position = position
+
+    def odom_cb(self, odom):
+        self.odom_pose = odom.pose.pose.position
 
     def update_pose_11(self):
         if (self.robot_1_distance, self.robot_1_position,
@@ -132,44 +140,36 @@ class TurtleBot1D(TurtleBot, object):
             std_dev = self.processed_scan.scan.std_dev
             median = self.processed_scan.scan.median
             bias = 0.3556
+<<<<<<< HEAD
             self.pose32.pose.pose.position.x = (self.robot_3_position.x - median) - self.pose.x  # - std_dev - bias
+=======
+            self.pose32.pose.pose.position.x = (self.robot_3_position.x - median)# - self.pose.x  # - std_dev - bias
+            self.pose32.pose.pose.orientation.w = 1  # Have to include this since robot_localization forces us to fuse y and yaw on at least one sensor
+>>>>>>> 7ce6757... Fixes movement
             self.covariance32[0] = self.processed_scan.scan.variance
             self.pose32.pose.covariance = self.covariance32
             self.pose32.header.stamp = rospy.get_rostime()
             self.pose32.header.frame_id = self.namespace + 'odom'
             self.pose_wrt_3_from_2.publish(self.pose32)
 
-    def move(self, amount, lower_bound=1, upper_bound=3):
-        goal_x = self.pose.x + amount
+    def move(self, amount, lower_bound=-1, upper_bound=1):
+        goal_x = self.odom_pose.x + amount
 
         within_bounds = helpers.check_bounds(goal_x, lower_bound, upper_bound)
         if within_bounds:
             move_cmd = Twist()
             if amount < 0:
                 move_cmd.linear.x = -self.speed
-                dist_to_goal = -amount
             else:
                 move_cmd.linear.x = self.speed
-                dist_to_goal = amount
             rospy.logdebug('Robot is heading to x: %s', str(goal_x))
 
-            prev_time = helpers.get_curr_time()
-            tot_dist_traveled = 0
+            dist_to_goal = math.fabs(goal_x - self.odom_pose.x)
             while dist_to_goal > 0.1:
                 self.cmd_vel_pub.publish(move_cmd)
                 self.rate.sleep()
+                dist_to_goal = math.fabs(goal_x - self.odom_pose.x)
 
-                curr_time = helpers.get_curr_time()
-                diff = curr_time - prev_time
-                dist_traveled = self.speed * diff
-                tot_dist_traveled += dist_traveled
-                dist_to_goal -= dist_traveled
-                prev_time = curr_time
-
-            if amount < 0:
-                self.pose.x -= tot_dist_traveled
-            else:
-                self.pose.x += tot_dist_traveled
             rospy.logdebug('Robot reached x: %s', str(goal_x))
         else:
             rospy.logwarn('Goal received out of bounds')
@@ -182,11 +182,11 @@ class TurtleBot1D(TurtleBot, object):
 
 def main():
     robot = TurtleBot1D()
+    rospy.sleep(10)
 
     while not rospy.is_shutdown():
-        #robot.move(amount=random.uniform(-1, 1))
-        #rospy.sleep(1)
-        rospy.spin()
+        robot.move(amount=random.uniform(-1, 1))
+        rospy.sleep(1)
 
 if __name__ == '__main__':
     try:
