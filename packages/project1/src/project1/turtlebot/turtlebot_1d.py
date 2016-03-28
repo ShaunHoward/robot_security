@@ -90,7 +90,7 @@ class TurtleBot1D(TurtleBot, object):
             std_dev = self.robot_1_distance.scan.std_dev
             mean = self.robot_1_distance.scan.mean
             bias = 0.3556
-            self.pose11.pose.pose.position.x = self.robot_1_position.x + mean - std_dev - bias
+            self.pose11.pose.pose.position.x = (self.robot_1_position.x + median) - self.pose.x  # - std_dev - bias
             self.covariance11[0] = self.robot_1_distance.scan.variance
             self.pose11.pose.covariance = self.covariance11
             self.pose11.header.stamp = rospy.get_rostime()
@@ -110,9 +110,9 @@ class TurtleBot1D(TurtleBot, object):
             # account for distance from t3 center to t2 center as well as kinect dists
             median = self.robot_3_distance.scan.median
             std_dev = self.robot_3_distance.scan.std_dev
-            mean = self.robot_3_distance.scan.mean
+            mean = self.robot_3_distance.scan.mean - (2 * .087)
             bias = 0.3556
-            self.pose33.pose.pose.position.x = self.robot_3_position.x - mean - std_dev - bias
+            self.pose33.pose.pose.position.x = (self.robot_3_position.x - median) - self.pose.x  # - std_dev - bias
             self.covariance33[0] = self.robot_3_distance.scan.variance
             self.pose33.pose.covariance = self.covariance33
             self.pose33.header.stamp = rospy.get_rostime()
@@ -128,11 +128,11 @@ class TurtleBot1D(TurtleBot, object):
         # NOTE: this one works well and is on-par with real odom
         if self.processed_scan is not None and self.robot_3_position is not None:
             # account for distance from t2 center to t3 center as well as kinect dists
-            mean = self.processed_scan.scan.mean
+            mean = self.processed_scan.scan.mean - (2 * .087)
             std_dev = self.processed_scan.scan.std_dev
             median = self.processed_scan.scan.median
             bias = 0.3556
-            self.pose32.pose.pose.position.x = self.robot_3_position.x - mean - std_dev - bias
+            self.pose32.pose.pose.position.x = (self.robot_3_position.x - median) - self.pose.x  # - std_dev - bias
             self.covariance32[0] = self.processed_scan.scan.variance
             self.pose32.pose.covariance = self.covariance32
             self.pose32.header.stamp = rospy.get_rostime()
@@ -184,8 +184,9 @@ def main():
     robot = TurtleBot1D()
 
     while not rospy.is_shutdown():
-        robot.move(amount=random.uniform(-1, 1))
-        rospy.sleep(1)
+        #robot.move(amount=random.uniform(-1, 1))
+        #rospy.sleep(1)
+        rospy.spin()
 
 if __name__ == '__main__':
     try:
