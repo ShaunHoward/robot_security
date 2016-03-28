@@ -21,6 +21,12 @@ The input of n-1 sensors affected by terroristic activities can be accurately pr
 
 # To launch multi-robot simulation in Gazebo
 - sudo apt-get install ros-indigo-robot-localization
+- catkin make in ros_ws
+- add to ~/.bashrc for python and msg generation:
+PYTHONPATH=/opt/ros/indigo/lib/python2.7/dist-packages
+export PYTHONPATH="${PYTHONPATH}:/home/shaun/projects/ros_ws/devel/lib/python2.7/dist-packages"
+source ~/ros_ws/devel/setup.bash
+- source ~/.bashrc
 - roslaunch project1 turtlebot_world.launch
 - rosrun rviz rviz
 - After opening Rviz select the the base_link of whichever robot you would like to view (turtlebot1, turtlebot2, turtlebot3).
