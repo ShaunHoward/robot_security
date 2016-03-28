@@ -32,7 +32,7 @@ class TurtleBot:
         self.speed = speed
         self.rate = rospy.Rate(rate)
 
-        self.namespace = rospy.get_namespace()
+        self.namespace = rospy.get_namespace()[1:]  # Get rid of the leading /
 
     def initialize_subscribers(self):
         self.lidar_subscriber = rospy.Subscriber('scan',
@@ -41,8 +41,8 @@ class TurtleBot:
 
     def initialize_publishers(self):
         self.processed_scan_publisher = rospy.Publisher('processed_scan',
-                                                  ScanWithVarianceStamped,
-                                                  queue_size=1)
+                                                        ScanWithVarianceStamped,
+                                                        queue_size=1)
 
         self.position_publisher = rospy.Publisher('position',
                                                   Pose2D,
@@ -87,18 +87,3 @@ class TurtleBot:
         stamped_scan_w_variance.header.stamp = rospy.get_rostime()
 
         return stamped_scan_w_variance
-
-
-def main():
-    rospy.init_node('robot')
-
-    robot = TurtleBot()
-
-    while not rospy.is_shutdown():
-        rospy.spin()
-
-if __name__ == '__main__':
-    try:
-        main()
-    except rospy.ROSInterruptException:
-        pass
