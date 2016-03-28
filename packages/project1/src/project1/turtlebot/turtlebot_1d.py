@@ -139,7 +139,7 @@ class TurtleBot1D(TurtleBot, object):
             self.pose32.header.frame_id = self.namespace + 'odom'
             self.pose_wrt_3_from_2.publish(self.pose32)
 
-    def move(self, amount, lower_bound=1, upper_bound=5):
+    def move(self, amount, lower_bound=1, upper_bound=3):
         goal_x = self.pose.x + amount
 
         within_bounds = helpers.check_bounds(goal_x, lower_bound, upper_bound)
