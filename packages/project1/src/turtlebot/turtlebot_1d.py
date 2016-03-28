@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import rospy
+import math
 import helpers
 import random
 from geometry_msgs.msg import Twist, Pose2D, PoseWithCovarianceStamped
@@ -82,9 +83,14 @@ class TurtleBot1D(TurtleBot, object):
         self.robot_3_position = position
 
     def update_pose_11(self):
-        if self.robot_1_distance is not None and self.robot_1_position is not None:
-            self.pose11.pose.pose.position.x = self.robot_1_position.x + self.robot_1_distance.scan.mean
-            # TODO add distance from edge to center of turtlebot to this calculation and kinect to center
+        if (self.robot_1_distance, self.robot_1_position,
+            self.robot_1_distance.scan.std_dev, self.robot_1_distance.scan.median)\
+                is not (None, None, None, None):
+            median = self.robot_1_distance.scan.median
+            std_dev = self.robot_1_distance.scan.std_dev
+            mean = self.robot_1_distance.scan.mean
+            bias = 0.3556
+            self.pose11.pose.pose.position.x = self.robot_1_position.x + mean - std_dev - bias
             self.covariance11[0] = self.robot_1_distance.scan.variance
             self.pose11.pose.covariance = self.covariance11
             self.pose11.header.stamp = rospy.get_rostime()
@@ -97,9 +103,16 @@ class TurtleBot1D(TurtleBot, object):
                 rospy.logdebug("Didn't update pose_11 because robot_1_position = None")
 
     def update_pose_33(self):
-        if self.robot_3_distance is not None and self.robot_3_position is not None:
-            self.pose33.pose.pose.position.x = self.robot_3_distance.scan.mean - self.robot_3_position.x
-            # TODO add distance from edge to center of turtlebot to this calculation and kinect to center
+        if (self.robot_3_distance, self.robot_3_position,
+            self.robot_3_distance.scan.std_dev, self.robot_3_distance.scan.median)\
+                is not (None, None, None, None):
+            # width of turtlebot is 14 in == .3556 m, accounting for kinect dists -> .3556/2
+            # account for distance from t3 center to t2 center as well as kinect dists
+            median = self.robot_3_distance.scan.median
+            std_dev = self.robot_3_distance.scan.std_dev
+            mean = self.robot_3_distance.scan.mean
+            bias = 0.3556
+            self.pose33.pose.pose.position.x = self.robot_3_position.x - mean - std_dev - bias
             self.covariance33[0] = self.robot_3_distance.scan.variance
             self.pose33.pose.covariance = self.covariance33
             self.pose33.header.stamp = rospy.get_rostime()
@@ -112,16 +125,21 @@ class TurtleBot1D(TurtleBot, object):
                 rospy.logdebug("Didn't update pose_33 because robot_3_position = None")
 
     def update_pose_32(self):
+        # NOTE: this one works well and is on-par with real odom
         if self.processed_scan is not None and self.robot_3_position is not None:
-            self.pose32.pose.pose.position.x = self.robot_3_position.x - self.processed_scan.scan.mean
-            # TODO add distance from edge to center of turtlebot to this calculation and kinect to center
+            # account for distance from t2 center to t3 center as well as kinect dists
+            mean = self.processed_scan.scan.mean
+            std_dev = self.processed_scan.scan.std_dev
+            median = self.processed_scan.scan.median
+            bias = 0.3556
+            self.pose32.pose.pose.position.x = self.robot_3_position.x - mean - std_dev - bias
             self.covariance32[0] = self.processed_scan.scan.variance
             self.pose32.pose.covariance = self.covariance32
             self.pose32.header.stamp = rospy.get_rostime()
             self.pose32.header.frame_id = self.namespace + 'odom'
             self.pose_wrt_3_from_2.publish(self.pose32)
 
-    def move(self, amount, lower_bound=1, upper_bound=3):
+    def move(self, amount, lower_bound=1, upper_bound=5):
         goal_x = self.pose.x + amount
 
         within_bounds = helpers.check_bounds(goal_x, lower_bound, upper_bound)
