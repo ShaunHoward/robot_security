@@ -79,15 +79,20 @@ class TurtleBot:
             sample_median = numpy.median(valid_particles)
             sample_variance = numpy.var(valid_particles)
             sample_std_dev = math.sqrt(sample_variance)
+        else:
+            sample_mean = 0
+            sample_variance = 0
+            sample_std_dev = 0
+            sample_median = 0
 
-            scan = ScanWithVariance()
-            scan.mean = sample_mean
-            scan.variance = sample_variance
-            scan.std_dev = sample_std_dev
-            scan.median = sample_median
+        scan = ScanWithVariance()
+        scan.mean = sample_mean
+        scan.variance = sample_variance
+        scan.std_dev = sample_std_dev
+        scan.median = sample_median
 
-            self.processed_scan = self.stamp_scan_w_variance(scan)
-            self.processed_scan_publisher.publish(self.processed_scan)
+        self.processed_scan = self.stamp_scan_w_variance(scan)
+        self.processed_scan_publisher.publish(self.processed_scan)
 
     @staticmethod
     def stamp_scan_w_variance(scan_w_variance):
