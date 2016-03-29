@@ -44,5 +44,4 @@
 
     <!-- Main ROS node for turtlebot logic-->
     <node pkg="project1" type="stationary_turtlebot.py" name="robot"/>
-    <node pkg="project1" type="error_publisher.py" name="error"/>
 </launch>
