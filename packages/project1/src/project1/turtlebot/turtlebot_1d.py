@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 import rospy
-import helpers
+import helpers as h
 import math
 import random
 
@@ -91,53 +91,38 @@ class TurtleBot1D(TurtleBot, object):
         self.odom_pose = odom.pose.pose.position
 
     def update_pose_11(self):
-        if (self.robot_1_distance, self.robot_1_position,
-            self.robot_1_distance.scan.std_dev, self.robot_1_distance.scan.median)\
-                is not (None, None, None, None):
-            median = self.robot_1_distance.scan.median
-            std_dev = self.robot_1_distance.scan.std_dev
-            mean = self.robot_1_distance.scan.mean
-            bias = 0.3556
-            self.pose11.pose.pose.position.x = (self.robot_1_position.x + median) - self.pose.x  # - std_dev - bias
+        scan = self.robot_1_distance.scan
+        if not h.scan_has_none_check(scan):
+            bias = 0.11
+            val = scan.min #+ bias
+            self.pose11.pose.pose.position.x = self.robot_1_position.x + (scan.median + scan.max) / 2. + bias  # - self.pose.x  # - std_dev - bias
             self.covariance11[0] = self.robot_1_distance.scan.variance
             self.pose11.pose.covariance = self.covariance11
             self.pose11.header.stamp = rospy.get_rostime()
             self.pose11.header.frame_id = self.namespace + 'odom'
             self.pose_wrt_1_from_1.publish(self.pose11)
         else:
-            if self.robot_1_distance is None:
-                rospy.logdebug("Didn't update pose_11 because robot_1_distance = None")
-            if self.robot_1_position is None:
-                rospy.logdebug("Didn't update pose_11 because robot_1_position = None")
+            rospy.logdebug("robot 1 scan items are none, cannot yet acquire feedback.")
 
     def update_pose_33(self):
-        if (self.robot_3_distance, self.robot_3_position,
-            self.robot_3_distance.scan.std_dev, self.robot_3_distance.scan.median)\
-                is not (None, None, None, None):
+        scan = self.robot_3_distance.scan
+        if not h.scan_has_none_check(scan):
             # width of turtlebot is 14 in == .3556 m, accounting for kinect dists -> .3556/2
             # account for distance from t3 center to t2 center as well as kinect dists
-            median = self.robot_3_distance.scan.median
-            std_dev = self.robot_3_distance.scan.std_dev
-            mean = self.robot_3_distance.scan.mean - (2 * .087)
-            bias = 0.3556
-            self.pose33.pose.pose.position.x = (self.robot_3_position.x - median) - self.pose.x  # - std_dev - bias
+            bias = 0.03
+            self.pose33.pose.pose.position.x = self.robot_3_position.x - (scan.median + scan.max) / 2. + bias  # - median) - self.pose.x  # - std_dev - bias
             self.covariance33[0] = self.robot_3_distance.scan.variance
             self.pose33.pose.covariance = self.covariance33
             self.pose33.header.stamp = rospy.get_rostime()
             self.pose33.header.frame_id = self.namespace + 'odom'
             self.pose_wrt_3_from_3.publish(self.pose33)
         else:
-            if self.robot_3_distance is None:
-                rospy.logdebug("Didn't update pose_33 because robot_3_distance = None")
-            if self.robot_3_position is None:
-                rospy.logdebug("Didn't update pose_33 because robot_3_position = None")
+            rospy.logdebug("robot 3 scan items are none, cannot yet acquire feedback.")
 
     def update_pose_32(self):
         # NOTE: this one works well and is on-par with real odom
         if self.processed_scan is not None and self.robot_3_position is not None:
             # account for distance from t2 center to t3 center as well as kinect dists
-            mean = self.processed_scan.scan.mean - (2 * .087)
-            std_dev = self.processed_scan.scan.std_dev
             median = self.processed_scan.scan.median
             bias = 0.3556
             self.pose32.pose.pose.position.x = (self.robot_3_position.x - median)# - self.pose.x  # - std_dev - bias
@@ -151,7 +136,7 @@ class TurtleBot1D(TurtleBot, object):
     def move(self, amount, lower_bound=-1, upper_bound=1):
         goal_x = self.odom_pose.x + amount
 
-        within_bounds = helpers.check_bounds(goal_x, lower_bound, upper_bound)
+        within_bounds = h.check_bounds(goal_x, lower_bound, upper_bound)
         if within_bounds:
             move_cmd = Twist()
             if amount < 0:

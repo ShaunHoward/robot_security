@@ -11,7 +11,7 @@ from project1.msg import ScanWithVariance, ScanWithVarianceStamped
 
 class TurtleBot:
 
-    def __init__(self, speed=0.2, rate=10):
+    def __init__(self, speed=0.4, rate=10):
         rospy.init_node('robot')
 
         x_pos = rospy.get_param('x_pos')
@@ -70,26 +70,30 @@ class TurtleBot:
         valid_particles = []
         # ranges = numpy.array(scan_msg.ranges)
         for particle in scan_msg.ranges:
-            if self.range_min < particle < self.range_max:
+            if self.range_min <= particle <= self.range_max:
                 valid_particles.append(particle)
+
+        scan = ScanWithVariance()
 
         # Now calculate sample mean and variance
         if len(valid_particles) is not 0:
-            sample_mean = numpy.mean(valid_particles)
-            sample_median = numpy.median(valid_particles)
-            sample_variance = numpy.var(valid_particles)
-            sample_std_dev = math.sqrt(sample_variance)
+            scan.min = numpy.min(valid_particles)
+            scan.max = numpy.max(valid_particles)
+            scan.mean = numpy.mean(valid_particles)
+            scan.median = numpy.median(valid_particles)
+            var = numpy.var(valid_particles)
+            std = math.sqrt(var)
+            scan.variance = var
+            scan.std_dev = std
+            scan.std_error = std / math.sqrt(len(valid_particles))
         else:
-            sample_mean = 0
-            sample_variance = 0
-            sample_std_dev = 0
-            sample_median = 0
-
-        scan = ScanWithVariance()
-        scan.mean = sample_mean
-        scan.variance = sample_variance
-        scan.std_dev = sample_std_dev
-        scan.median = sample_median
+            scan.min = 0
+            scan.max = 0
+            scan.mean = 0
+            scan.variance = 0
+            scan.std_dev = 0
+            scan.median = 0
+            scan.std_error = 0
 
         self.processed_scan = self.stamp_scan_w_variance(scan)
         self.processed_scan_publisher.publish(self.processed_scan)
