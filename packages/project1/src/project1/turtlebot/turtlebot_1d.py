@@ -122,10 +122,9 @@ class TurtleBot1D(TurtleBot, object):
         # NOTE: this one works well and is on-par with real odom
         if self.processed_scan is not None and self.robot_3_position is not None:
             # account for distance from t2 center to t3 center as well as kinect dists
-            median = self.processed_scan.scan.median
-            bias = 0.3556
-            self.pose32.pose.pose.position.x = (self.robot_3_position.x - median)# - self.pose.x  # - std_dev - bias
-            self.pose32.pose.pose.orientation.w = 1  # Have to include this since robot_localization forces us to fuse y and yaw on at least one sensor
+            self.pose32.pose.pose.position.x = self.robot_3_position.x - self.processed_scan.scan.median
+            # Have to include this since robot_localization forces us to fuse y and yaw on at least one sensor
+            self.pose32.pose.pose.orientation.w = 1
             self.covariance32[0] = self.processed_scan.scan.variance
             self.pose32.pose.covariance = self.covariance32
             self.pose32.header.stamp = rospy.get_rostime()
