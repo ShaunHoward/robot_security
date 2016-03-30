@@ -28,7 +28,7 @@ def get_file_paths_and_names(directory):
     return file_paths, file_names  # Self-explanatory.
 
 
-def bagcsv2dict(fp, fn, dict, col_name="x", ext=".csv"):
+def bagcsv2dict(fp, fn, dict, col_name="x", col_type=float, ext=".csv"):
     """
     This will export the values of the first column with the given
     name to a list and put it in the provided dict an return it.
@@ -36,6 +36,7 @@ def bagcsv2dict(fp, fn, dict, col_name="x", ext=".csv"):
     fn: the file name
     ext: the file extension
     col_name: the name of column to keep
+    col_type: the type to cast the column values into
     dict: the existing dict to store col list in with fn - ext as key
     :return: the dict with the list added
     """
@@ -49,7 +50,8 @@ def bagcsv2dict(fp, fn, dict, col_name="x", ext=".csv"):
             inds = [i for i in range(len(rows)) if col_name in rows[i]]
             x_key = inds[0]
             continue
-        vals.append(rows[x_key])
+        # don't forget to convert strings to the specified type!
+        vals.append(col_type(rows[x_key]))
     fn = fn.rstrip(ext)
     dict[fn] = vals
     return dict

@@ -32,24 +32,33 @@ def get_stats(vals, targets):
     # do project 1 stats on value list
     stats_dict = dict()
     if vals is not None:
-        if targets is not None:
-            len_vals = len(vals)
-            len_targs = len(targets)
-            # make lengths equal
-            if len_vals > len_targs:
-                window = calc_window_size(len_vals, len_targs)
-                vals = moving_window_avg(vals, window)
-            else:
-                window = calc_window_size(len_targs, len_vals)
-                targets = moving_window_avg(targets, window)
-            stats_dict[MSE] = rmse(vals, targets)
-        else:
-            print "no targets were provided"
         stats_dict[MEAN] = np.mean(vals)
         stats_dict[MEDIAN] = np.median(vals)
         stats_dict[STD_DEV] = np.std(vals)
         stats_dict[VAR] = np.var(vals)
         stats_dict[STD_ERR] = np.var(vals) / math.sqrt(len(vals))
+        if targets is not None:
+            len_vals = len(vals)
+            len_targs = len(targets)
+            # try to make lengths equal
+            if len_vals > len_targs:
+                window = calc_window_size(len_vals, len_targs)
+                vals = moving_window_avg(vals, window)
+                len_vals = len(vals)
+            else:
+                window = calc_window_size(len_targs, len_vals)
+                targets = moving_window_avg(targets, window)
+                len_targs = len(targets)
+            # account for offset by removing last few values to make arrays equal in length
+            if len_vals > len_targs:
+                diff = len_vals - len_targs
+                vals = vals[:len(vals) - diff]
+            elif len_targs > len_vals:
+                diff = len_targs - len_vals
+                targets = targets[:len(targets) - diff]
+            stats_dict[MSE] = rmse(vals, targets)
+        else:
+            print "no targets were provided"
     else:
         print "no values were provided"
     return stats_dict
@@ -69,7 +78,7 @@ def get_stats_dict(target_topic="t2_odom"):
         targ_vec = None
         for topic in topic_list:
             if target_topic in topic:
-                targ_vec = np.array(odom_topics[topic])
+                targ_vec = np.array(odom_topics[topic]).astype(np.float64)
         for topic in topic_list:
             if target_topic in topic:
                 continue
