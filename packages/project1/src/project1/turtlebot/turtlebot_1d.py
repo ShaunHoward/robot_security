@@ -94,7 +94,7 @@ class TurtleBot1D(TurtleBot, object):
         scan = self.robot_1_distance.scan
         if not h.scan_has_none_check(scan):
             bias = 0.105
-            self.pose11.pose.pose.position.x = self.robot_1_position.x + (scan.median + scan.max) / 2. + bias
+            self.pose11.pose.pose.position.x = self.robot_1_position.x + scan.median - self.pose.x
             self.covariance11[0] = self.robot_1_distance.scan.variance
             self.pose11.pose.covariance = self.covariance11
             self.pose11.header.stamp = rospy.get_rostime()
@@ -108,8 +108,8 @@ class TurtleBot1D(TurtleBot, object):
         if not h.scan_has_none_check(scan):
             # width of turtlebot is 14 in == .3556 m, accounting for kinect dists -> .3556/2
             # account for distance from t3 center to t2 center as well as kinect dists
-            bias = 0.03
-            self.pose33.pose.pose.position.x = self.robot_3_position.x - (scan.median + scan.max) / 2. + bias
+            bias = 0.16
+            self.pose33.pose.pose.position.x = self.robot_3_position.x - scan.median + self.pose.x - bias
             self.covariance33[0] = self.robot_3_distance.scan.variance
             self.pose33.pose.covariance = self.covariance33
             self.pose33.header.stamp = rospy.get_rostime()
