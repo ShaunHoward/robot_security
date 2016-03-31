@@ -2,6 +2,11 @@
 % Authors: Shaun Howard and Matt Swartwout
 \documentclass[conference]{IEEEtran}
 \usepackage[T1]{fontenc}
+\usepackage[backend=biber, style=ieee]{biblatex}
+\addbibresource{report.bib}
+\usepackage[final]{microtype}
+%\usepackage{appendix}
+\usepackage{listings}
 
 % *** GRAPHICS RELATED PACKAGES ***
 %
@@ -166,34 +171,29 @@ The core problems solved in the implementation of this system are:
 \begin{enumerate}
 \item Implementation of Extended and Unscented Kalmann filters via the robot\_localization package
 \cite{robot_localization}
+\item Create a ROS \cite{ros_original} system that simulates a TurtleBot 2 and the stationary landmarks in Gazebo
+\cite{gazebo}.
+\item Create a ROS node system for the Turtlebot 2 that facilitates communication between the mobile robot and the 
+stationary landmarks, and also transforms and feeds those measurements into the filters.
 \end{enumerate}
 % end of problem
 
 
 % start robot predict
-\section{Using Multiple Robot Sensors to Predict the Location of a Single Mobile Robot}
+\section{Methodology}
+As stated above, the project naturally divided itself into three main problems. These three problems were the
+implementation of the Extended and Unscented Kalman filters, simulation of the Turtlebot 2 and 1-D environment in 
+Gazebo, and creating the system of ROS nodes for the Turtlebot 2 to communicate with the stationary landmarks and the 
+filters. Our overall system structure can be seen 
 
-% start ROMDP
-\subsection{Redundant Observable Markov Decision Processes}
+\subsection{Filter Implementation}
+We chose to implement our filters using the previously mentioned robot\_localization. We chose this package due to its 
+ability to do sensor fusion of an arbitrary number of sensors, because it was built for ROS, and because of the simple 
+setup but also the complex configurations that it enables.
+\subsection{Gazebo Simulation}
+\subsection{Inter-Node Communication System}
 
-% end ROMDP
-
-% start particle filter
-\subsection{Generic Particle Filter}
-% end particle filter
-
-% start robot technique
-\subsection{Estimating the Position of a Terrorized Robot using ROMDP and a Particle Filter}
-% end robot technique
-
-% end robot predict
-
-
-% start robot case study
-\section{TurtleBot Case Study}
-
-% end robot case study
-
+\section{Results}
 
 \section{Conclusion}
 The conclusion goes here.
@@ -219,21 +219,8 @@ The authors would like to thank...
 % <OR> manually copy in the resultant .bbl file
 % set second argument of \begin to the number of references
 % (used to reserve space for the reference number labels box)
-\begin{thebibliography}{2}
 
-\bibitem{IEEEhowto:kopka}
-Bezzo, N. et al. \emph{A Guide to \LaTeX}, 3rd~ed.\hskip 1em plus
-  0.5em minus 0.4em\relax Harlow, England: Addison-Wesley, 1999.
-
-\bibitem{robot_localization,
-  author    = {T. Moore and D. Stouch},
-  title     = {A Generalized Extended Kalman Filter Implementation for the Robot Operating System},
-  year      = {2014},
-  month     = {July},
-  booktitle = {Proceedings of the 13th International Conference on Intelligent Autonomous Systems (IAS-13)},
-  publisher = {Springer}
-}
-\end{thebibliography}
+\printbibliography
 
 
 
