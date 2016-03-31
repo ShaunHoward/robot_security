@@ -83,8 +83,8 @@ Email: \{smh150, mws85\}@case.edu}
 In this paper, we propose the use of both an Extended Kalman Filter (EKF) and an Unscented Kalman Filter (UKF) in order 
 to determine the x-position of a single mobile robot (R) given multiple noisy sensor measurements. Given a squadron of 
 N robots in a one-dimensional environment, the x-position of robot R with noisy odometry data can be estimated via the 
-N-1 remaining robots denoted S. Each robot in S can monitor the true position of R via their laser scan sensor 
-in order to build a set of pose estimates for R. The resulting set of N-1 pose estimates can be filtered in a 
+sensor measurements of all N robots denoted S. Each robot in S can monitor the true position of R via their laser scan 
+sensor in order to build a set of pose estimates for R. The resulting set of N-1 pose estimates can be filtered in a 
 distributed fashion either via an EKF or UKF in order to accurately estimate the current pose of R in the 
 one-dimensional environment.
 
@@ -93,7 +93,7 @@ the results of the distributed filter with a self-filter in this environment whe
 object detection and either an EKF or UKF. We simulate the use of each filter with varying speeds of R. We analyze and 
 compare filter results from each simulation in order to determine the reliability of each filter. Our simulation 
 results reveal that the distributed filter frequently out-performs the self-filter in terms of accuracy without any 
-additional parameter tuning. Lastly, we discuss possible additions to this research.
+additional parameter tuning.
 \end{abstract}
 % Same thing here, we didn't actually look into attacking any sensors
 The idea behind the method is derived from the method proposed in [1]. Their method uses an EKF to predict the
@@ -172,7 +172,7 @@ recognition system between the robot and landmarks)
 
 The core problems solved in the implementation of this system are:
 \begin{enumerate}
-\item Implementation of Extended and Unscented Kalmann filters via the robot\_localization package
+\item Implementation of Extended and Unscented Kalman filters via the robot\_localization package
 \cite{robot_localization}
 \item Create a ROS \cite{ros_original} system that simulates a TurtleBot 2 and the stationary landmarks in Gazebo
 \cite{gazebo}.
@@ -219,10 +219,22 @@ some of the error that may have come from the median point of the scan on the ro
 positions from scan to scan. While error there may have existed, it would not lead to discrete jumps like the position 
 measurement would have.
 \subsection{Gazebo Simulation}
+Our simulation experiments were run with three robots, two at fixed positions and one moving randomly between the two. 
+During each experiment, R moved randomly in the x-direction at a chosen experimental speed. During each simulation 
+experiment, both a distributed filter and a self-filter were utilized to approximate the x-position of R. 
+The distributed filter used three pose estimates from the three robots while the self-filter mechanism used object 
+detection to form a single pose estimate. Experiments were run for both distributed and self-filters simultaneously 
+based on the choice of EKF or UKF. Two speeds of 0.2 m/s and 0.4 m/s were chosen during experimentation for each filter 
+type in order to determine the performance of filters at various speeds in the one-dimensional environment.
 \subsection{Inter-Node Communication System}
 
 \section{Results}
+Figure 2 displays a comparison of the simulator and filtered odometry measurements per two experiments with the EKF and 
+two experiments with the UKF. In accordance with the figure, the filtered odometry ... 
+per each filter.
 
+The results of our simulation support our hypothesis about the application of an EKF or UKF to estimate the position of 
+a single mobile robot R via N-1 other robots monitoring R in a 1-D environment. 
 \section{Conclusion}
 The conclusion goes here.
 
