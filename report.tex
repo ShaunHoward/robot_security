@@ -5,8 +5,6 @@
 \usepackage[backend=biber, style=ieee]{biblatex}
 \addbibresource{report.bib}
 \usepackage[final]{microtype}
-%\usepackage{appendix}
-\usepackage{listings}
 
 % *** GRAPHICS RELATED PACKAGES ***
 %
@@ -95,12 +93,17 @@ compare filter results from each simulation in order to determine the reliabilit
 results reveal that the distributed filter frequently out-performs the self-filter in terms of accuracy without any 
 additional parameter tuning.
 \end{abstract}
+
 % Same thing here, we didn't actually look into attacking any sensors
 The idea behind the method is derived from the method proposed in [1]. Their method uses an EKF to predict the
 position of one terrorized robot given N sensor measurements. The difference between the methods is that this
 method analyses the usage of an EKF as well as UKF for estimating the position of a terrorized robot
-given N-1 measurements from remote sensors and a single sensor measurement given point cloud data from the affected robot.
-Both filters show remarkable results in tracking the terrorized robot's position over time, but the UKF beats the EKF in accuracy most of the time. The simulation uses three robots with one terrorized and monitored by the other two to test the estimation hypothesis and prove that UKF works with one-dimensional robot position estimation from N noisy sensor measurements.
+given N-1 measurements from remote sensors and a single sensor measurement given point cloud data from the affected
+robot.
+Both filters show remarkable results in tracking the terrorized robot's position over time, but the UKF beats the EKF in
+accuracy most of the time. The simulation uses three robots with one terrorized and monitored by the other two to test
+the estimation hypothesis and prove that UKF works with one-dimensional robot position estimation from N noisy sensor
+measurements.
 
 % start of introduction
 \section{Introduction}
@@ -117,20 +120,27 @@ maybe become terrorized at once.
 Not only do robots have to deal with noise from their sensors, but they also are prone to loss of communications
 with their remote global positioning systems (GPS). As demonstrated in [2], terrorists use a spoofed GPS system
 to knock a yacht off course. Terrorist attacks are a growing threat that must be addressed in order to save
-valuable robotic systems from danger zones. Figure 1 displays three TurtleBots in the Gazebo simulator world. The middle TurtleBot is the terrorized robot that moves back and forth between the other two, safe robots which monitor it as it moves. As the middle robot undergoes attack, the proposed system should provide the terrorized robot with a reasonable position estimation for safe navigational purposes such as avoiding danger zones in an environment or on a map.
+valuable robotic systems from danger zones. Figure 1 displays three TurtleBots in the Gazebo simulator world. The middle
+TurtleBot is the terrorized robot that moves back and forth between the other two, safe robots which monitor it as it
+moves. As the middle robot undergoes attack, the proposed system should provide the terrorized robot with a reasonable
+position estimation for safe navigational purposes such as avoiding danger zones in an environment or on a map.
 \par 
 % discuss image and experimental/sim setup
 Figure 1 is a reference for the simulation experiments performed in this paper. The proposed method takes
-interest in estimating the state of the moving terrorized robot according to the distances between the robots acquired through point cloud scans of all the robots.
+interest in estimating the state of the moving terrorized robot according to the distances between the robots acquired
+through point cloud scans of all the robots.
 \par
 \begin{figure}[!ht]
   \centering
     \includegraphics[scale=.2]{sim1}
-  \caption{Three TurtleBots on a world-based grid world attempt to estimate the position of the moving and terrorized robot.}
+  \caption{Three TurtleBots on a world-based grid world attempt to estimate the position of the moving and terrorized
+robot.}
 \end{figure}
 \par
 Importantly, redundancy is considered by utilizing N-1 sensor readings from other robots in addition to the
-sensor on the moving robot in order to estimate the state of moving robot in the world. Problems such as the one posed in this paper can be solved by EKFs and UKFs. EKFs can be applied to many other cyber-physical systems that utilize multiple sensor measurements to make a prediction about the position a system.
+sensor on the moving robot in order to estimate the state of moving robot in the world. Problems such as the one posed
+in this paper can be solved by EKFs and UKFs. EKFs can be applied to many other cyber-physical systems that utilize
+multiple sensor measurements to make a prediction about the position a system.
 \par
 % discuss method using EKF and UKF
 This paper contributes (1) slight modifications to the ROMDP algorithm proposed in [1], (2) a proposed technique
@@ -176,7 +186,7 @@ The core problems solved in the implementation of this system are:
 \cite{robot_localization}
 \item Create a ROS \cite{ros_original} system that simulates a TurtleBot 2 and the stationary landmarks in Gazebo
 \cite{gazebo}.
-\item Create a ROS node system for the Turtlebot 2 that facilitates communication between the mobile robot and the 
+\item Create a ROS node system for the TurtleBot 2 that facilitates communication between the mobile robot and the
 stationary landmarks, and also transforms and feeds those measurements into the filters.
 \end{enumerate}
 % end of problem
@@ -185,9 +195,19 @@ stationary landmarks, and also transforms and feeds those measurements into the 
 % start robot predict
 \section{Methodology}
 As stated above, the project naturally divided itself into three main problems. These three problems were the
-implementation of the Extended and Unscented Kalman filters, simulation of the Turtlebot 2 and 1-D environment in 
-Gazebo, and creating the system of ROS nodes for the Turtlebot 2 to communicate with the stationary landmarks and the 
+implementation of the Extended and Unscented Kalman filters, simulation of the TurtleBot 2 and 1-D environment in
+Gazebo, and creating the system of ROS nodes for the TurtleBot 2 to communicate with the stationary landmarks and the
 filters.
+
+\subsection{Sensor Measurements} \label{Sensor Measurements}
+Before describing our filter, we will describe how we collected our distance measurements. Our measurements were taken
+by a simulated Microsoft Kinect camera, v1.0. We used the depthimage\_to\_laserscan package \cite{depth_to_scan} to
+create a
+simulated LIDAR. Every scan (of ROS type sensor\_msgs/LaserScan) received included a large number of ranges from
+different points in the scan. We used this collection of ranges to create a single scan point that we then fed into the
+filter. We found that taking the median of the scan ranges was far more accurate than the mean, so each filter input
+was the median of the scan ranges, with the variance of the measurement being the variance of the entire group of
+measurements that was taken.
 
 \subsection{Filter Implementation}
 We chose to implement our filters using the previously mentioned robot\_localization. We chose this package due to its 
@@ -219,32 +239,57 @@ some of the error that may have come from the median point of the scan on the ro
 positions from scan to scan. While error there may have existed, it would not lead to discrete jumps like the position 
 measurement would have.
 
+We did not utilize any of the advanced parameters for either filter, and for the Unscented Kalman Filter we left the
+alpha, beta, and kappa values at their defaults (0.001, 0, and 2, respectively). Once running, the filter nodes
+published their topics via the standard ros publish/subscribe system and we were able to view this data.
+
+
 \subsection{Gazebo Simulation}
-Our simulation experiments were run with three robots, two at fixed positions and one moving randomly between the two. 
-During each experiment, R moved randomly in the x-direction at a chosen experimental speed. During each simulation 
-experiment, both a distributed filter and a self-filter were utilized to approximate the x-position of R. 
-The distributed filter used three pose estimates from the three robots while the self-filter mechanism used object 
-detection to form a single pose estimate. Experiments were run for both distributed and self-filters simultaneously 
-based on the choice of EKF or UKF. Two speeds of 0.2 m/s and 0.4 m/s were chosen during experimentation for each filter 
-type in order to determine the performance of filters at various speeds in the one-dimensional environment.
+Our simulation experiments were run in Gazebo with three robots, two at fixed positions (stationary landmarks) and one
+moving randomly between the two (mobile robot). During each experiment, the mobile robot moved randomly in the
+x-direction at a chosen experimental speed. Two speeds of 0.2 m/s and 0.4 m/s were chosen during experimentation for
+each filter type in order to determine the performance of filters at various speeds in the one-dimensional environment.
+
+The robot models used were the default TurtleBot 2 URDFs provided by the TurtleBot ROS package \cite{turtlebot}. The
+robots were spawned into the world following the instructions laid out in the Gazebo Bringup Guide, with each robot
+brought up inside of its own namespace to avoid conflicts.
+
+The robots were spawned at Gazebo world coordinate (0,0), (2,0), and (4,0). The random motion of the mobile robot was
+allowed between (1,0), and (3,0). These limits were chosen based on the Kinect's maximum range of 4m and minimum range
+of .8m. To create the random motion, the robot would get a random number between -1 and 1 from a uniform distribution
+and use that as an amount to move, with negative being backwards and positive forwards. Then a check was done to see if
+the final position after the move would be inside the movement bounds. If not, a new movement amount was generated. If
+the move was acceptable, it was executed, with the progress being monitored by the Gazebo generated odometry. This
+random motion repeated infinitely until stopped.
+
 \subsection{Inter-Node Communication System}
+The communication system between the ROS nodes was created very simply using the ros publish/suscribe paradigm. Each of
+the TurtleBots constantly processed the received LaserScans, as outlined in \ref{Sensor Measurements} and published
+them to a topic call processed\_scan. The mobile robot then subscribed to these topics and created Pose readings based
+on that sensor measurement. These Pose readings were then published on their own topic, which the filters were
+configured to subscribe too. Finally, the filters output their total state estimation reading on a separate topic,
+which we were then able to record, graph, etc.
+
+In essence, the use of ROS greatly simplified the networking of this system. Rather than having to work through the
+intricacies of networking the robots together, we were able to create a system that is extensible to an arbitrary
+number of robots and extremely resilient to failures, while also being incredibly simple.
 
 \section{Results}
 % discuss and display sim vs filtered odom using std dev error bars
-Figure 2 displays a comparison of the predicted odometry measurements via distributed and self filters with the actual 
-simulator odometry measurements per the four experiments performed. In accordance with the figure, we observe that the 
+Figure 2 displays a comparison of the predicted odometry measurements via distributed and self filters with the actual
+simulator odometry measurements per the four experiments performed. In accordance with the figure, we observe that the
 filtered odometry is very close in accuracy to the simulator odometry in both cases.
 
 % discuss, compare and display self and dist filtering errors vs sim odom
- Comparing both filtering approaches, we observe that the distributed filter almost always out-performs the self-filter 
+ Comparing both filtering approaches, we observe that the distributed filter almost always out-performs the self-filter
  with both filter types.
 
 % discuss, compare and display dist filters with each other based on errors from sim odom
-Additionally, by no surprise we find that the UKF distributed filtering method out-performs the EKF distributed 
+Additionally, by no surprise we find that the UKF distributed filtering method out-performs the EKF distributed
 filtering method. Figure 4 displays the comparison in error over time of both distributed filters per experiment.
 
-Overall, the results of our simulation support our hypothesis about the application of an EKF or UKF to accurately 
-estimate the position of a single mobile robot R via N-1 other robots monitoring R in a 1-D environment. 
+Overall, the results of our simulation support our hypothesis about the application of an EKF or UKF to accurately
+estimate the position of a single mobile robot R via N-1 other robots monitoring R in a 1-D environment.
 \section{Conclusion}
 The conclusion goes here.
 
@@ -269,11 +314,6 @@ The authors would like to thank...
 % <OR> manually copy in the resultant .bbl file
 % set second argument of \begin to the number of references
 % (used to reserve space for the reference number labels box)
-
 \printbibliography
-
-
-
-
 % that's all folks
 \end{document}
