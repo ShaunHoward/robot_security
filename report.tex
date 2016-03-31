@@ -80,23 +80,20 @@ Email: \{smh150, mws85\}@case.edu}
 % As a general rule, do not put math, special symbols or citations
 % in the abstract
 \begin{abstract}
-This paper proposes the use of an Extended Kalman Filter (EKF) in order to take multiple
-noisy input measurements from multiple robots and determine the location of a mobile robot in the view angle of the others.
-Further, an Unscented Kalman Filter (UKF) is put to the test in place of the EKF to compare results between the two filters based on the 
-same simulation including one moving robot and two stationary robots that watch it. The simulation proves
-that both the EKF and UKF are viable solutions for correcting odometry data for at least one robot when
-grouped with a squadron of at least one additional robot.
+In this paper, we propose the use of both an Extended Kalman Filter (EKF) and an Unscented Kalman Filter (UKF) in order 
+to determine the x-position of a single mobile robot (R) given multiple noisy sensor measurements. Given a squadron of 
+N robots in a one-dimensional environment, the x-position of robot R with noisy odometry data can be estimated via the 
+N-1 remaining robots denoted S. Each robot in S can monitor the true position of R via their laser scan sensor 
+in order to build a set of pose estimates for R. The resulting set of N-1 pose estimates can be filtered in a 
+distributed fashion either via an EKF or UKF in order to accurately estimate the current pose of R in the 
+one-dimensional environment.
 
-
-% Not sure this part really makes sense, since we didn't examine/simulate any attack vectors
-Most current robot systems are designed in terms of functionality but little focus is put
-on the security of the devices. Terrorists can easily inject perturbed data into insecure mobile
-robot systems using the on-board networking utilities. The purpose of performing such a terrorist attack 
-is usually to cause the robot to enter a danger zone or collide with objects that could damage or destroy it.
-Given a terrorized robot monitoring its position with only a Microsoft Kinect 3D camera and a squadron of N-1
-non-terrorized robots with sensors monitoring the position of the terrorized robot, an EKF or UKF can be employed to
-help correctly determine the position of that Nth robot given $N$ < $2$ sensor measurements from all robots combined.
-
+We demonstrate the usefulness of this state estimation procedure through a three robot simulation in Gazebo. We compare 
+the results of the distributed filter with a self-filter in this environment where R estimates its own position via 
+object detection and either an EKF or UKF. We simulate the use of each filter with varying speeds of R. We analyze and 
+compare filter results from each simulation in order to determine the reliability of each filter. Our simulation 
+results reveal that the distributed filter frequently out-performs the self-filter in terms of accuracy without any 
+additional parameter tuning. Lastly, we discuss possible additions to this research.
 \end{abstract}
 % Same thing here, we didn't actually look into attacking any sensors
 The idea behind the method is derived from the method proposed in [1]. Their method uses an EKF to predict the
@@ -107,6 +104,8 @@ Both filters show remarkable results in tracking the terrorized robot's position
 
 % start of introduction
 \section{Introduction}
+
+% write brief history
 Autonomous mobile robotic systems have gained prevalence in the past 10 years. Along with this
 growth in usage, terrorist attacks have become more frequent on such systems.
 Many current autonomous mobile robot systems are prone to attack given the wireless interfaces present
@@ -114,11 +113,13 @@ on the robots in order to send and receive communications from a command base. I
 been given to this area in recent years, but many methods still fail to recognize that a chain of robots
 maybe become terrorized at once.
 \par
+% write issue areas and reasons to do our research
 Not only do robots have to deal with noise from their sensors, but they also are prone to loss of communications
 with their remote global positioning systems (GPS). As demonstrated in [2], terrorists use a spoofed GPS system
 to knock a yacht off course. Terrorist attacks are a growing threat that must be addressed in order to save
 valuable robotic systems from danger zones. Figure 1 displays three TurtleBots in the Gazebo simulator world. The middle TurtleBot is the terrorized robot that moves back and forth between the other two, safe robots which monitor it as it moves. As the middle robot undergoes attack, the proposed system should provide the terrorized robot with a reasonable position estimation for safe navigational purposes such as avoiding danger zones in an environment or on a map.
 \par 
+% discuss image and experimental/sim setup
 Figure 1 is a reference for the simulation experiments performed in this paper. The proposed method takes
 interest in estimating the state of the moving terrorized robot according to the distances between the robots acquired through point cloud scans of all the robots.
 \par
@@ -131,11 +132,13 @@ interest in estimating the state of the moving terrorized robot according to the
 Importantly, redundancy is considered by utilizing N-1 sensor readings from other robots in addition to the
 sensor on the moving robot in order to estimate the state of moving robot in the world. Problems such as the one posed in this paper can be solved by EKFs and UKFs. EKFs can be applied to many other cyber-physical systems that utilize multiple sensor measurements to make a prediction about the position a system.
 \par
+% discuss method using EKF and UKF
 This paper contributes (1) slight modifications to the ROMDP algorithm proposed in [1], (2) a proposed technique
 to deal with up to N-1 terrorized robots each with sensors measuring their own and other robot locations
 using ROMDP paired with a particle filter, and (3) simulation and experimental results important to evaluate
 the usability of this method in real-world scenarios considering mobile robots with monitoring allies.
 \par
+% discuss paper organization
 Following, the paper is organized like so: Section 2 describes work related to the method proposed; Section 3
 formally defines the problem being investigated; Section 4.1 covers the details the ROMDP algorithm and any
 modifications made; Section 4.2 details the generic particle filter algorithm; Section 4.3 outlines the positional
