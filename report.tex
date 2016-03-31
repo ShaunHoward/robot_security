@@ -55,7 +55,7 @@
 % not capitalized unless they are the first or last word of the title.
 % Linebreaks \\ can be used within to get better formatting as desired.
 % Do not put math or special symbols in the title.
-\title{Estimating the Position of a Terrorized Mobile Robot with Multiple Robot Sensors}
+\title{Distributed State Estimation in a 1-D World}
 
 
 % author names and affiliations
@@ -76,13 +76,14 @@ Email: \{smh150, mws85\}@case.edu}
 % in the abstract
 \begin{abstract}
 This paper proposes the use of an Extended Kalman Filter (EKF) in order to take multiple
-noisy input measurements from multiple robots and determine the location of a terrorized 
-mobile robot in the view angle of the others. Further, an Unscented Kalman Filter (UKF) is put 
-to the test in place of the EKF to compare results between the two filters based on the 
-same simulation including one moving, terrorized robot and two stationary robots that watch it. The simulation proves
-that both the EKF and UKF are viable solutions for correcting terrorized odometry data for at least one robot when
+noisy input measurements from multiple robots and determine the location of a mobile robot in the view angle of the others.
+Further, an Unscented Kalman Filter (UKF) is put to the test in place of the EKF to compare results between the two filters based on the 
+same simulation including one moving robot and two stationary robots that watch it. The simulation proves
+that both the EKF and UKF are viable solutions for correcting odometry data for at least one robot when
 grouped with a squadron of at least one additional robot.
 
+
+% Not sure this part really makes sense, since we didn't examine/simulate any attack vectors
 Most current robot systems are designed in terms of functionality but little focus is put
 on the security of the devices. Terrorists can easily inject perturbed data into insecure mobile
 robot systems using the on-board networking utilities. The purpose of performing such a terrorist attack 
@@ -92,11 +93,13 @@ non-terrorized robots with sensors monitoring the position of the terrorized rob
 help correctly determine the position of that Nth robot given $N$ < $2$ sensor measurements from all robots combined.
 
 \end{abstract}
- The idea behind the method is derived from the method proposed in [1]. Their method uses an EKF to predict the
+% Same thing here, we didn't actually look into attacking any sensors
+The idea behind the method is derived from the method proposed in [1]. Their method uses an EKF to predict the
 position of one terrorized robot given N sensor measurements. The difference between the methods is that this
 method analyses the usage of an EKF as well as UKF for estimating the position of a terrorized robot
 given N-1 measurements from remote sensors and a single sensor measurement given point cloud data from the affected robot.
 Both filters show remarkable results in tracking the terrorized robot's position over time, but the UKF beats the EKF in accuracy most of the time. The simulation uses three robots with one terrorized and monitored by the other two to test the estimation hypothesis and prove that UKF works with one-dimensional robot position estimation from N noisy sensor measurements.
+
 % start of introduction
 \section{Introduction}
 Autonomous mobile robotic systems have gained prevalence in the past 10 years. Along with this
@@ -143,7 +146,27 @@ co-operatives. Lastly, section 6 concludes the paper and future work is discusse
 
 % start of problem
 \section{Problem Formulation}
+% This should probably go in the introduction somewhere
+The concept of sensor fusion and combining multiple sensor readings within a single robot has been well shown.
+By combining data from multiple sensors and feeding that information into an EKF or UKF, the total accuracy of the
+system can be improved.
+Inherent noise in one sensor will propagate less into the final result, and the loss of a single or multiple sensors
+will not necessarily result in catastrophic failure of the system.
 
+Our problem specification is created from these core tenets:
+\begin{enumerate}
+\item A finite 1-D system containing a mobile robot
+\item A physical landmark (e.g. stationary robot) at each end of the system
+\item The mobile robot and landmarks are all equipped with a sensor that measures distance
+\item The mobile robot can move forwards and backwards, but cannot change its orientation (this obviates the need for a
+recognition system between the robot and landmarks)
+\end{enumerate}
+
+The core problems solved in the implementation of this system are:
+\begin{enumerate}
+\item Implementation of Extended and Unscented Kalmann filters via the robot\_localization package
+\cite{robot_localization}
+\end{enumerate}
 % end of problem
 
 
@@ -196,12 +219,20 @@ The authors would like to thank...
 % <OR> manually copy in the resultant .bbl file
 % set second argument of \begin to the number of references
 % (used to reserve space for the reference number labels box)
-\begin{thebibliography}{1}
+\begin{thebibliography}{2}
 
 \bibitem{IEEEhowto:kopka}
 Bezzo, N. et al. \emph{A Guide to \LaTeX}, 3rd~ed.\hskip 1em plus
   0.5em minus 0.4em\relax Harlow, England: Addison-Wesley, 1999.
 
+\bibitem{robot_localization,
+  author    = {T. Moore and D. Stouch},
+  title     = {A Generalized Extended Kalman Filter Implementation for the Robot Operating System},
+  year      = {2014},
+  month     = {July},
+  booktitle = {Proceedings of the 13th International Conference on Intelligent Autonomous Systems (IAS-13)},
+  publisher = {Springer}
+}
 \end{thebibliography}
 
 
