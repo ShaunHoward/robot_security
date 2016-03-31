@@ -37,14 +37,15 @@
           args="load depthimage_to_laserscan/DepthImageToLaserScanNodelet laserscan_nodelet_manager">
         <param name="scan_height" value="10"/>
         <param name="output_frame_id" value="$(arg model_name)/camera_depth_frame"/>
-        <param name="range_min" value="0.4"/>
+        <param name="range_min" value="0.45"/>
         <remap from="image" to="camera/depth/image_raw"/>
         <!--remap from="scan" to="scan"/-->
     </node>
 
     <!-- Robot Localization nodes-->
-    <node pkg="robot_localization" type="ekf_localization_node" name="ekf_self" clear_params="true" output="screen">
+    <node pkg="robot_localization" type="ukf_localization_node" name="ukf_self" clear_params="true" output="screen">
         <remap from="odometry/filtered" to="odometry/filtered_self"/>
+        <remap from="set_pose" to="set_pose_self"/>
         <param name="frequency" value="10"/>
         <param name="sensor_timeout"  value="0.1"/>
         <param name="two_d_mode" value="true"/>
@@ -66,8 +67,9 @@
     </node>
 
         <!-- Robot Localization nodes-->
-    <node pkg="robot_localization" type="ekf_localization_node" name="ekf_distributed" clear_params="true" output="screen">
-                <remap from="odometry/filtered" to="odometry/filtered_distributed"/>
+    <node pkg="robot_localization" type="ukf_localization_node" name="ukf_distributed" clear_params="true" output="screen">
+        <remap from="odometry/filtered" to="odometry/filtered_distributed"/>
+        <remap from="set_pose" to="set_pose_distributed"/>
         <param name="frequency" value="10"/>
         <param name="sensor_timeout"  value="0.1"/>
         <param name="two_d_mode" value="true"/>

@@ -4,12 +4,13 @@ import rospy
 import helpers as h
 import math
 import random
+import subprocess
 
 from geometry_msgs.msg import Twist, Pose2D, PoseWithCovarianceStamped
 from turtlebot import TurtleBot
 from project1.msg import ScanWithVarianceStamped
 from nav_msgs.msg import Odometry
-
+from robot_localization.srv import SetPose
 
 class TurtleBot1D(TurtleBot, object):
 
@@ -93,7 +94,7 @@ class TurtleBot1D(TurtleBot, object):
     def update_pose_11(self):
         scan = self.robot_1_distance.scan
         if not h.scan_has_none_check(scan):
-            bias = 0.105
+
             self.pose11.pose.pose.position.x = self.robot_1_position.x + scan.median - self.pose.x
             self.covariance11[0] = self.robot_1_distance.scan.variance
             self.pose11.pose.covariance = self.covariance11
@@ -109,7 +110,7 @@ class TurtleBot1D(TurtleBot, object):
             # width of turtlebot is 14 in == .3556 m, accounting for kinect dists -> .3556/2
             # account for distance from t3 center to t2 center as well as kinect dists
             bias = 0.16
-            self.pose33.pose.pose.position.x = self.robot_3_position.x - scan.median + self.pose.x - bias
+            self.pose33.pose.pose.position.x = self.robot_3_position.x - scan.median - self.pose.x #- bias
             self.covariance33[0] = self.robot_3_distance.scan.variance
             self.pose33.pose.covariance = self.covariance33
             self.pose33.header.stamp = rospy.get_rostime()
@@ -122,7 +123,8 @@ class TurtleBot1D(TurtleBot, object):
         # NOTE: this one works well and is on-par with real odom
         if self.processed_scan is not None and self.robot_3_position is not None:
             # account for distance from t2 center to t3 center as well as kinect dists
-            self.pose32.pose.pose.position.x = self.robot_3_position.x - self.processed_scan.scan.median
+            bias = 0.16
+            self.pose32.pose.pose.position.x = self.robot_3_position.x - self.processed_scan.scan.median - self.pose.x #- bias
             # Have to include this since robot_localization forces us to fuse y and yaw on at least one sensor
             self.pose32.pose.pose.orientation.w = 1
             self.covariance32[0] = self.processed_scan.scan.variance
@@ -161,7 +163,24 @@ class TurtleBot1D(TurtleBot, object):
 
 def main():
     robot = TurtleBot1D()
-    rospy.sleep(10)
+    rospy.sleep(7)  # Wait for everything else in Gazebo world to be ready
+    # Once everything is ready we need to reset our filters
+    # Because they could have gotten erroneous readings
+    #rospy.loginfo('waiting for set_pose_distributed service')
+    #rospy.wait_for_service('set_pose_distributed')
+    #pose_request_distributed = SetPose()
+    #rospy.ServiceProxy('set_pose_distributed', pose_request_distributed)
+    #rospy.loginfo("Distributed pose was reset")
+    rospy.loginfo("Calling service reset")
+    subprocess.Popen(["rosservice", "call", "set_pose_distributed", "{}"])
+    subprocess.Popen(["rosservice", "call", "set_pose_self","{}"])
+    rospy.loginfo("Poses reset")
+    #rospy.loginfo('waiting for set_pose_self service')
+    #rospy.wait_for_service('set_pose_self')
+    #pose_request_self = SetPose()
+    #rospy.ServiceProxy('/turtlebot2/set_pose_self', pose_request_self)
+    #rospy.loginfo("Self pose was reset")
+    rospy.sleep(3)
 
     while not rospy.is_shutdown():
         robot.move(amount=random.uniform(-1, 1))
