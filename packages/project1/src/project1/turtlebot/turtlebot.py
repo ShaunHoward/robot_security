@@ -11,7 +11,7 @@ from project1.msg import ScanWithVariance, ScanWithVarianceStamped
 
 class TurtleBot:
 
-    def __init__(self, speed=.6, rate=10):
+    def __init__(self, speed=.2, rate=10):
         rospy.init_node('robot')
 
         x_pos = rospy.get_param('x_pos')
