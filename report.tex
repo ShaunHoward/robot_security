@@ -218,6 +218,7 @@ points and represented that as the distance to the robot. By using the velocitie
 some of the error that may have come from the median point of the scan on the robot being in slightly different 
 positions from scan to scan. While error there may have existed, it would not lead to discrete jumps like the position 
 measurement would have.
+
 \subsection{Gazebo Simulation}
 Our simulation experiments were run with three robots, two at fixed positions and one moving randomly between the two. 
 During each experiment, R moved randomly in the x-direction at a chosen experimental speed. During each simulation 
@@ -229,12 +230,21 @@ type in order to determine the performance of filters at various speeds in the o
 \subsection{Inter-Node Communication System}
 
 \section{Results}
-Figure 2 displays a comparison of the simulator and filtered odometry measurements per two experiments with the EKF and 
-two experiments with the UKF. In accordance with the figure, the filtered odometry ... 
-per each filter.
+% discuss and display sim vs filtered odom using std dev error bars
+Figure 2 displays a comparison of the predicted odometry measurements via distributed and self filters with the actual 
+simulator odometry measurements per the four experiments performed. In accordance with the figure, we observe that the 
+filtered odometry is very close in accuracy to the simulator odometry in both cases.
 
-The results of our simulation support our hypothesis about the application of an EKF or UKF to estimate the position of 
-a single mobile robot R via N-1 other robots monitoring R in a 1-D environment. 
+% discuss, compare and display self and dist filtering errors vs sim odom
+ Comparing both filtering approaches, we observe that the distributed filter almost always out-performs the self-filter 
+ with both filter types.
+
+% discuss, compare and display dist filters with each other based on errors from sim odom
+Additionally, by no surprise we find that the UKF distributed filtering method out-performs the EKF distributed 
+filtering method. Figure 4 displays the comparison in error over time of both distributed filters per experiment.
+
+Overall, the results of our simulation support our hypothesis about the application of an EKF or UKF to accurately 
+estimate the position of a single mobile robot R via N-1 other robots monitoring R in a 1-D environment. 
 \section{Conclusion}
 The conclusion goes here.
 
