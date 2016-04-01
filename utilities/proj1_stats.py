@@ -149,7 +149,7 @@ def graph_stats(sub_stats_dict, pat):
             else:
                 plt.errorbar(range(0, len(x_vals)), x_vals, std_dev_vals, fmt='b')
             plt.plot(range(0, len(odom_x_vals)), odom_x_vals, 'r')
-            legend.append("sim_odom")
+            legend.append("simulator_odometry")
             plt.title(topic + " x position vs time")
             plt.xlabel("Time (s)")
             plt.ylabel("TurtleBot x position (m)")
