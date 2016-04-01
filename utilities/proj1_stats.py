@@ -151,7 +151,7 @@ def graph_stats(sub_stats_dict, pat):
             plt.plot(range(0, len(odom_x_vals)), odom_x_vals, 'r')
             legend.append("simulator_odometry")
             plt.title(topic + " x position vs time")
-            plt.xlabel("Time (s)")
+            plt.xlabel("Time (steps)")
             plt.ylabel("TurtleBot x position (m)")
             plt.legend(legend, loc='lower right')
             plt.savefig('_'.join([topic, 'pos_err_graph.png']), bbox_inches='tight')
