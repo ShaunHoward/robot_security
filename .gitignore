@@ -121,6 +121,10 @@ CATKIN_IGNORE
 *.synctex.gz
 *.tex
 *.pdf
+*.bbl
+*.bcf
+*.blg
+*.run.xml
 
 # YouCompleteMe config
 .ycm_extra_conf.py
