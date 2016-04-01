@@ -1,11 +1,7 @@
 __author__ = 'shaun'
 import csv
 import os
-
-cwd = os.getcwd()
-filter_csv_path = os.path.join(cwd, 'filter_csvs')
-
-sample_prefixes = ['ekf_.2speed', 'ekf_.6speed', 'ukf_.2speed', 'ukf_.4speed', 'ukf_.6or8speed']
+import math
 
 
 def get_file_paths_and_names(directory):
@@ -28,7 +24,7 @@ def get_file_paths_and_names(directory):
     return file_paths, file_names  # Self-explanatory.
 
 
-def bagcsv2dict(fp, fn, dict, col_name="x", col_type=float, ext=".csv"):
+def bagcsv2dict(fp, fn, topic_dict, col_names=["x", "covariance"], ext=".csv", chop_size=200):
     """
     This will export the values of the first column with the given
     name to a list and put it in the provided dict an return it.
@@ -40,31 +36,41 @@ def bagcsv2dict(fp, fn, dict, col_name="x", col_type=float, ext=".csv"):
     dict: the existing dict to store col list in with fn - ext as key
     :return: the dict with the list added
     """
-    reader = csv.reader(open(fp, "rb"))
-    first = True
-    x_key = 0
-    vals = []
-    for rows in reader:
-        if first:
-            first = False
-            inds = [i for i in range(len(rows)) if col_name in rows[i]]
-            x_key = inds[0]
-            continue
-        # don't forget to convert strings to the specified type!
-        vals.append(col_type(rows[x_key]))
+    key = 0
+    my_dict = dict()
+    for col_name in col_names:
+        vals = []
+        first = True
+        reader = csv.reader(open(fp, "rb"))
+        i_ = 1
+        for rows in reader:
+            #if i < chop_size:
+            if first:
+                first = False
+                inds = [i for i in range(len(rows)) if col_name in rows[i]]
+                if col_name == "covariance":
+                    col_name = "std_dev_from_covar"
+                key = inds[0]
+                continue
+            # don't forget to convert strings to the specified type!
+            if col_name == "x":
+                vals.append(float(rows[key]))
+            elif col_name == "std_dev_from_covar":
+                vals.append(math.sqrt(float(rows[key].split(",")[0].lstrip('['))) / math.sqrt(i_))
+            i_ += 1
+            #else:
+            #    break
+        my_dict[col_name] = vals
     fn = fn.rstrip(ext)
-    dict[fn] = vals
-    return dict
+    topic_dict[fn] = my_dict
+    return topic_dict
 
 
-def convert_csvs_to_dict():
-    (fps, fns) = get_file_paths_and_names(filter_csv_path)
+def convert_csvs_to_dict(csvs_path):
+    (fps, fns) = get_file_paths_and_names(csvs_path)
     my_dict = dict()
     for i in range(len(fps)):
         my_dict = bagcsv2dict(fps[i], fns[i], my_dict)
     return my_dict
 
-
-if __name__ == "__main__":
-    convert_csvs_to_dict()
 
