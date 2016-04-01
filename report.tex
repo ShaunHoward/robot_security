@@ -1,22 +1,14 @@
 % Project 1 - EECS 499
 % Authors: Shaun Howard and Matt Swartwout
-\documentclass[conference]{IEEEtran}
-\usepackage[T1]{fontenc}
-\usepackage[backend=biber, style=ieee]{biblatex}
-\addbibresource{report.bib}
-\usepackage[final]{microtype}
+\documentclass[conference]{IEEEtran} \usepackage[T1]{fontenc} \usepackage[backend=biber, style=ieee]{biblatex}
+\addbibresource{report.bib} \usepackage[final]{microtype}
 
 % *** GRAPHICS RELATED PACKAGES ***
 %
-\ifCLASSINFOpdf
-  \usepackage[pdftex]{graphicx}
-  % declare the path(s) where your graphic files are
-  \graphicspath{{images/}}
-  % and their extensions so you won't have to specify these with
+\ifCLASSINFOpdf \usepackage[pdftex]{graphicx} % declare the path(s) where your graphic files are
+  \graphicspath{{images/}} % and their extensions so you won't have to specify these with
   % every instance of \includegraphics
-  \DeclareGraphicsExtensions{.jpeg,.png}
-\else
-  % or other class option (dvipsone, dvipdf, if not using dvips). graphicx
+  \DeclareGraphicsExtensions{.jpeg,.png} \else % or other class option (dvipsone, dvipdf, if not using dvips). graphicx
   % will default to the driver specified in the system graphics.cfg if no
   % driver is specified.
   % \usepackage[dvips]{graphicx}
@@ -25,11 +17,10 @@
   % and their extensions so you won't have to specify these with
   % every instance of \includegraphics
   % \DeclareGraphicsExtensions{.eps}
-\fi
-% graphicx was written by David Carlisle and Sebastian Rahtz. It is
+\fi % graphicx was written by David Carlisle and Sebastian Rahtz. It is
 % required if you want graphics, photos, etc. graphicx.sty is already
 % installed on most LaTeX systems. The latest version and documentation
-% can be obtained at: 
+% can be obtained at:
 % http://www.ctan.org/pkg/graphicx
 % Another good source of documentation is "Using Imported Graphics in
 % LaTeX2e" by Keith Reckdahl which can be found at:
@@ -64,13 +55,8 @@
 % author names and affiliations
 % use a multiple column layout for up to three different
 % affiliations
-\author{
-\IEEEauthorblockN{Shaun Howard \ \ Matt Swartwout}
-\IEEEauthorblockA{Electrical Engineering and Computer Science Department\\
-Case Western Reserve University\\
-Cleveland, Ohio 44106\\
-Email: \{smh150, mws85\}@case.edu}
-}
+\author{ \IEEEauthorblockN{Shaun Howard \ \ Matt Swartwout} \IEEEauthorblockA{Electrical Engineering and Computer
+Science Department\\ Case Western Reserve University\\ Cleveland, Ohio 44106\\ Email: \{smh150, mws85\}@case.edu} }
 
 % make the title area
 \maketitle
@@ -78,165 +64,119 @@ Email: \{smh150, mws85\}@case.edu}
 % As a general rule, do not put math, special symbols or citations
 % in the abstract
 \begin{abstract}
-In this paper, we propose the use of both an Extended Kalman Filter (EKF) and an Unscented Kalman Filter (UKF) in order 
-to determine the x-position of a single mobile robot (R) given multiple noisy sensor measurements. Given a squadron of 
-N robots in a one-dimensional environment, the x-position of robot R with noisy odometry data can be estimated via the 
-sensor measurements of all N robots denoted S. Each robot in S can monitor the true position of R via their laser scan 
-sensor in order to build a set of pose estimates for R. The resulting set of N-1 pose estimates can be filtered in a 
-distributed fashion either via an EKF or UKF in order to accurately estimate the current pose of R in the 
+In this paper, we propose the use of both an Extended Kalman Filter (EKF) and an Unscented Kalman
+Filter (UKF) in order to determine the x-position of a single mobile robot (R) given multiple noisy sensor measurements.
+Given a squadron of N robots in a one-dimensional environment, the x-position of robot R with noisy odometry data can be
+estimated via the sensor measurements of all N robots denoted S. Each robot in S can monitor the true position of R via
+their laser scan sensor in order to build a set of pose estimates for R. The resulting set of N-1 pose estimates can be
+filtered in a distributed fashion either via an EKF or UKF in order to accurately estimate the current pose of R in the
 one-dimensional environment.
 
-We demonstrate the usefulness of this state estimation procedure through a three robot simulation in Gazebo. We compare 
-the results of the distributed filter with a self-filter in this environment where R estimates its own position via 
-object detection and either an EKF or UKF. We simulate the use of each filter with varying speeds of R. We analyze and 
-compare filter results from each simulation in order to determine the reliability of each filter. Our simulation 
-results reveal that the distributed filter frequently out-performs the self-filter in terms of accuracy without any 
-additional parameter tuning.
+We demonstrate the usefulness of this state estimation procedure through a three robot simulation in Gazebo. We compare
+the results of the distributed filter with a self-filter in this environment where R estimates its own position via
+object detection and either an EKF or UKF. We simulate the use of each filter with varying speeds of R. We analyze and
+compare filter results from each simulation in order to determine the reliability of each filter. Our simulation results
+reveal that the distributed filter frequently out-performs the self-filter in terms of accuracy without any additional
+parameter tuning.
 \end{abstract}
 
 % Same thing here, we didn't actually look into attacking any sensors
-The idea behind the method is derived from the method proposed in [1]. Their method uses an EKF to predict the
-position of one terrorized robot given N sensor measurements. The difference between the methods is that this
-method analyses the usage of an EKF as well as UKF for estimating the position of a terrorized robot
-given N-1 measurements from remote sensors and a single sensor measurement given point cloud data from the affected
-robot.
-Both filters show remarkable results in tracking the terrorized robot's position over time, but the UKF beats the EKF in
-accuracy most of the time. The simulation uses three robots with one terrorized and monitored by the other two to test
-the estimation hypothesis and prove that UKF works with one-dimensional robot position estimation from N noisy sensor
-measurements.
+The idea behind the method is derived from the method proposed in [1]. Their method uses an EKF to predict the position
+of one terrorized robot given N sensor measurements. The difference between the methods is that this method analyses the
+usage of an EKF as well as UKF for estimating the position of a terrorized robot given N-1 measurements from remote
+sensors and a single sensor measurement given point cloud data from the affected robot. Both filters show remarkable
+results in tracking the terrorized robot's position over time, but the UKF beats the EKF in accuracy most of the time.
+The simulation uses three robots with one terrorized and monitored by the other two to test the estimation hypothesis
+and prove that UKF works with one-dimensional robot position estimation from N noisy sensor measurements.
 
-% start of introduction
-\section{Introduction}
+\section{Introduction} \label{Introduction}
+Networked cyber-physical systems have become more and more common in recent history. Traditionally, as the need for more
+accuracy and precision has evolved with these systems the response has been to add more sensors. These sensors, when
+combined together, e.g. a Kalman filter, can provide better state estimation than a single sensor alone. This is also
+significantly cheaper than developing single sensors with extraordinary accuracy. However, as mobile robots and other
+mobile autonomous technologies become more widespread the desire to decrease the cost and complexity of these devices
+has increased. Adding more and more sensors to a single robot, while effective, is not cost-efficient for production and
+leads to higher maintenance costs over the life of the robot.
 
-% write brief history
-Autonomous mobile robotic systems have gained prevalence in the past 10 years. Along with this
-growth in usage, terrorist attacks have become more frequent on such systems.
-Many current autonomous mobile robot systems are prone to attack given the wireless interfaces present
-on the robots in order to send and receive communications from a command base. Increased attention has
-been given to this area in recent years, but many methods still fail to recognize that a chain of robots
-maybe become terrorized at once.
-\par
-% write issue areas and reasons to do our research
-Not only do robots have to deal with noise from their sensors, but they also are prone to loss of communications
-with their remote global positioning systems (GPS). As demonstrated in [2], terrorists use a spoofed GPS system
-to knock a yacht off course. Terrorist attacks are a growing threat that must be addressed in order to save
-valuable robotic systems from danger zones. Figure 1 displays three TurtleBots in the Gazebo simulator world. The middle
-TurtleBot is the terrorized robot that moves back and forth between the other two, safe robots which monitor it as it
-moves. As the middle robot undergoes attack, the proposed system should provide the terrorized robot with a reasonable
-position estimation for safe navigational purposes such as avoiding danger zones in an environment or on a map.
-\par 
-% discuss image and experimental/sim setup
-Figure 1 is a reference for the simulation experiments performed in this paper. The proposed method takes
-interest in estimating the state of the moving terrorized robot according to the distances between the robots acquired
-through point cloud scans of all the robots.
-\par
+One solution to this is distributed sensor networks. With recent developments in high-bandwith mobile radio
+communications, sharing large amounts of sensor data over wireless networks has become much more feasible. Instead of
+putting many sensors on one robot, many robots can use their one sensor and their observations of the other robots
+around them to create a distributed state estimate for their companions.
+
+Our system is based on the TurtleBot 2 platform and the Robot Operating System (ROS) \cite{ros_original}. The system is a simple 1-Dimensional exploration of the feasibility of distributed state estimation, using a mobile robot and two stationary landmarks as shown in \ref{pic1}. The mobile robot, using a LIDAR distance sensor, determines its position in the world by comparing itself to known stationary landmarks. At the same time, the known landmarks also use LIDAR to determine the mobile robots position. All of this data is then fused together in a Kalman filter, and compared to the output of a Kalman filter of just the robot's individual sensor, and also the ground truth of the simulator. Our simulations compare not only the "self" and "distributed" versions of the filter, but also examine the Extended Kalman Filter vs Unscented Kalman Filter and how they respond differently to the configurations. We also simulate the robot's motion at different speeds and compare the filter's performance when that is modified.
+
 \begin{figure}[!ht]
-  \centering
-    \includegraphics[scale=.2]{sim1}
-  \caption{Three TurtleBots on a world-based grid world attempt to estimate the position of the moving and terrorized
-robot.}
+\label{pic1} 
+\centering 
+\includegraphics[scale=.2]{sim1}
+\caption{Three TurtleBots on a world-based grid worldattempt to estimate the position of the moving robot.}
 \end{figure}
-\par
-Importantly, redundancy is considered by utilizing N-1 sensor readings from other robots in addition to the
-sensor on the moving robot in order to estimate the state of moving robot in the world. Problems such as the one posed
-in this paper can be solved by EKFs and UKFs. EKFs can be applied to many other cyber-physical systems that utilize
-multiple sensor measurements to make a prediction about the position a system.
-\par
-% discuss method using EKF and UKF
-This paper contributes (1) slight modifications to the ROMDP algorithm proposed in [1], (2) a proposed technique
-to deal with up to N-1 terrorized robots each with sensors measuring their own and other robot locations
-using ROMDP paired with a particle filter, and (3) simulation and experimental results important to evaluate
-the usability of this method in real-world scenarios considering mobile robots with monitoring allies.
-\par
-% discuss paper organization
-Following, the paper is organized like so: Section 2 describes work related to the method proposed; Section 3
-formally defines the problem being investigated; Section 4.1 covers the details the ROMDP algorithm and any
-modifications made; Section 4.2 details the generic particle filter algorithm; Section 4.3 outlines the positional
-state estimation technique proposed using ROMDP and the generic particle filter; Section 5 covers the
-simulation outline, process and experimental results of a robot with terrorized sensors and 2 non-terrorized
-co-operatives. Lastly, section 6 concludes the paper and future work is discussed.
-% end of introduction
 
-% start of related work
-\section{Related Work}
+There are two primary contributions of this paper. First, we outline a system in ROS that implements a distributed sensor network between three robots, and is easily scalable to an arbitrary number. And second, we compare the performance of different filters in both the distributed and egocentric worldview.
 
-% end of related work
+\subsection{Related Work}
 
-% start of problem
-\section{Problem Formulation}
-% This should probably go in the introduction somewhere
-The concept of sensor fusion and combining multiple sensor readings within a single robot has been well shown.
-By combining data from multiple sensors and feeding that information into an EKF or UKF, the total accuracy of the
-system can be improved.
-Inherent noise in one sensor will propagate less into the final result, and the loss of a single or multiple sensors
-will not necessarily result in catastrophic failure of the system.
+\section{Problem Formulation} \label{Problem Formulation} % This should probably go in the introduction somewhere
+The concept of sensor fusion and combining multiple sensor readings within a single robot has been well shown. By
+combining data from multiple sensors and feeding that information into an EKF or UKF, the total accuracy of the system
+can be improved. Inherent noise in one sensor will propagate less into the final result, and the loss of a single or
+multiple sensors will not necessarily result in catastrophic failure of the system.
 
 Our problem specification is created from these core tenets:
-\begin{enumerate}
-\item A finite 1-D system containing a mobile robot
-\item A physical landmark (e.g. stationary robot) at each end of the system
-\item The mobile robot and landmarks are all equipped with a sensor that measures distance
-\item The mobile robot can move forwards and backwards, but cannot change its orientation (this obviates the need for a
-recognition system between the robot and landmarks)
+\begin{enumerate} 
+\item A finite 1-D system containing a mobile robot 
+\item A physical landmark (e.g. stationary robot) at each end of the system \item The mobile robot and
+landmarks are all equipped with a sensor that measures distance \item The mobile robot can move forwards and backwards,
+but cannot change its orientation (this obviates the need for a recognition system between the robot and landmarks)
 \end{enumerate}
 
 The core problems solved in the implementation of this system are:
-\begin{enumerate}
-\item Implementation of Extended and Unscented Kalman filters via the robot\_localization package
-\cite{robot_localization}
-\item Create a ROS \cite{ros_original} system that simulates a TurtleBot 2 and the stationary landmarks in Gazebo
-\cite{gazebo}.
-\item Create a ROS node system for the TurtleBot 2 that facilitates communication between the mobile robot and the
-stationary landmarks, and also transforms and feeds those measurements into the filters.
-\end{enumerate}
-% end of problem
+\begin{enumerate} \item Implementation of Extended and Unscented Kalman filters via the robot\_localization package \cite{robot_localization}
+\item Create a ROS system that simulates a TurtleBot 2 and the stationary landmarks in Gazebo \cite{gazebo}.
+\item Create a ROS node system for the TurtleBot 2 that facilitates communication between the mobile robot and the stationary landmarks, and also
+transforms and feeds those measurements into the filters. 
+\end{enumerate} 
 
+\section{Methodology} \label{Methodology} As stated above, the project naturally divided itself into three main
+problems. These three problems were the implementation of the Extended and Unscented Kalman filters, simulation of the
+TurtleBot 2 and 1-D environment in Gazebo, and creating the system of ROS nodes for the TurtleBot 2 to communicate with
+the stationary landmarks and the filters.
 
-% start robot predict
-\section{Methodology}
-As stated above, the project naturally divided itself into three main problems. These three problems were the
-implementation of the Extended and Unscented Kalman filters, simulation of the TurtleBot 2 and 1-D environment in
-Gazebo, and creating the system of ROS nodes for the TurtleBot 2 to communicate with the stationary landmarks and the
-filters.
+\subsection{Sensor Measurements} \label{Sensor Measurements} Before describing our filter, we will describe how we
+collected our distance measurements. Our measurements were taken by a simulated Microsoft Kinect camera, v1.0. We used
+the depthimage\_to\_laserscan package \cite{depth_to_scan} to create a simulated LIDAR. Every scan (of ROS type
+sensor\_msgs/LaserScan) received included a large number of ranges from different points in the scan. We used this
+collection of ranges to create a single scan point that we then fed into the filter. We found that taking the median of
+the scan ranges was far more accurate than the mean, so each filter input was the median of the scan ranges, with the
+variance of the measurement being the variance of the entire group of measurements that was taken.
 
-\subsection{Sensor Measurements} \label{Sensor Measurements}
-Before describing our filter, we will describe how we collected our distance measurements. Our measurements were taken
-by a simulated Microsoft Kinect camera, v1.0. We used the depthimage\_to\_laserscan package \cite{depth_to_scan} to
-create a
-simulated LIDAR. Every scan (of ROS type sensor\_msgs/LaserScan) received included a large number of ranges from
-different points in the scan. We used this collection of ranges to create a single scan point that we then fed into the
-filter. We found that taking the median of the scan ranges was far more accurate than the mean, so each filter input
-was the median of the scan ranges, with the variance of the measurement being the variance of the entire group of
-measurements that was taken.
+\subsection{Filter Implementation} \label{Filter Implementation} We chose to implement our filters using the previously
+mentioned robot\_localization. We chose this package due to its ability to do sensor fusion of an arbitrary number of
+sensors, because it was built for ROS, and because of the simple setup but also the complex configurations that it
+enables.
 
-\subsection{Filter Implementation}
-We chose to implement our filters using the previously mentioned robot\_localization. We chose this package due to its 
-ability to do sensor fusion of an arbitrary number of sensors, because it was built for ROS, and because of the simple 
-setup but also the complex configurations that it enables.
+We implemented both an Extended and Unscented Kalman filter, but the actual configuration parameters for both of them
+were identical. Additionally, we implemented two filters on the mobile robot. The first we called the "Self" filter, and
+used only one distance measurements, taken by the robot's distance sensor to the landmark directly in front of it. The
+second filter we called the "Distributed" filter, and it took measurements from the robot's sensor, and also both of the
+landmark's sensors. All measurements were fed to the filter as a geometry\_msgs/PoseWithCovarianceStamped messages.
 
-We implemented both an Extended and Unscented Kalman filter, but the actual configuration parameters for both of them 
-were identical. Additionally, we implemented two filters on the mobile robot. The first we called the "Self" filter, 
-and used only one distance measurements, taken by the robot's distance sensor to the landmark directly in front of it. 
-The second filter we called the "Distributed" filter, and it took measurements from the robot's sensor, and also both 
-of the landmark's sensors. All measurements were fed to the filter as a geometry\_msgs/PoseWithCovarianceStamped 
-messages.
-
-For both filters we set two\_d\_mode to true, because we did not care about any 3-dimensional motion. For the first 
-sensor measurement, we fused the x and y position and yaw into the final state estimate. Even though we assume a 1-D 
-system with no y movement possible, and also assume that no yaw rotations will ever be made, the filters do not support 
-a 1-D world so we had to include the y and yaw measurements. For the second and third sensor on the Distributed filter, 
+For both filters we set two\_d\_mode to true, because we did not care about any 3-dimensional motion. For the first
+sensor measurement, we fused the x and y position and yaw into the final state estimate. Even though we assume a 1-D
+system with no y movement possible, and also assume that no yaw rotations will ever be made, the filters do not support
+a 1-D world so we had to include the y and yaw measurements. For the second and third sensor on the Distributed filter,
 we fused only the x position.
 
-We also set the differential parameter to true for all sensors. This makes the filter differentiate the absolute 
-position measurements received and input them as velocities rather than positions. This had two distinct advantages for 
-our system. First, we did not need to worry about transforming the poses from the reference frame of the landmark to 
-the reference frame of the mobile robot. Since we knew the starting position of the robot we did not need the absolute 
-position measurements. Second, this reduced the error from our measurement system. The system we used was a Kinect 
-camera, and we took a slice of points from its depth cloud and used this to simulate a LIDAR. Because of this, we were 
-not measuring a specific, known point on the robot. Instead, we measured many points and then took the median of those 
-points and represented that as the distance to the robot. By using the velocities rather than positions we mitigated 
-some of the error that may have come from the median point of the scan on the robot being in slightly different 
-positions from scan to scan. While error there may have existed, it would not lead to discrete jumps like the position 
+We also set the differential parameter to true for all sensors. This makes the filter differentiate the absolute
+position measurements received and input them as velocities rather than positions. This had two distinct advantages for
+our system. First, we did not need to worry about transforming the poses from the reference frame of the landmark to the
+reference frame of the mobile robot. Since we knew the starting position of the robot we did not need the absolute
+position measurements. Second, this reduced the error from our measurement system. The system we used was a Kinect
+camera, and we took a slice of points from its depth cloud and used this to simulate a LIDAR. Because of this, we were
+not measuring a specific, known point on the robot. Instead, we measured many points and then took the median of those
+points and represented that as the distance to the robot. By using the velocities rather than positions we mitigated
+some of the error that may have come from the median point of the scan on the robot being in slightly different
+positions from scan to scan. While error there may have existed, it would not lead to discrete jumps like the position
 measurement would have.
 
 We did not utilize any of the advanced parameters for either filter, and for the Unscented Kalman Filter we left the
@@ -244,11 +184,11 @@ alpha, beta, and kappa values at their defaults (0.001, 0, and 2, respectively).
 published their topics via the standard ros publish/subscribe system and we were able to view this data.
 
 
-\subsection{Gazebo Simulation}
-Our simulation experiments were run in Gazebo with three robots, two at fixed positions (stationary landmarks) and one
-moving randomly between the two (mobile robot). During each experiment, the mobile robot moved randomly in the
-x-direction at a chosen experimental speed. Two speeds of 0.2 m/s and 0.4 m/s were chosen during experimentation for
-each filter type in order to determine the performance of filters at various speeds in the one-dimensional environment.
+\subsection{Gazebo Simulation} \label{Gazebo Simulation} Our simulation experiments were run in Gazebo with three
+robots, two at fixed positions (stationary landmarks) and one moving randomly between the two (mobile robot). During
+each experiment, the mobile robot moved randomly in the x-direction at a chosen experimental speed. Two speeds of 0.2
+m/s and 0.4 m/s were chosen during experimentation for each filter type in order to determine the performance of filters
+at various speeds in the one-dimensional environment.
 
 The robot models used were the default TurtleBot 2 URDFs provided by the TurtleBot ROS package \cite{turtlebot}. The
 robots were spawned into the world following the instructions laid out in the Gazebo Bringup Guide, with each robot
@@ -258,24 +198,23 @@ The robots were spawned at Gazebo world coordinate (0,0), (2,0), and (4,0). The 
 allowed between (1,0), and (3,0). These limits were chosen based on the Kinect's maximum range of 4m and minimum range
 of .8m. To create the random motion, the robot would get a random number between -1 and 1 from a uniform distribution
 and use that as an amount to move, with negative being backwards and positive forwards. Then a check was done to see if
-the final position after the move would be inside the movement bounds. If not, a new movement amount was generated. If
+the final position after the move wo uld be inside the movement bounds. If not, a new movement amount was generated. If
 the move was acceptable, it was executed, with the progress being monitored by the Gazebo generated odometry. This
 random motion repeated infinitely until stopped.
 
-\subsection{Inter-Node Communication System}
-The communication system between the ROS nodes was created very simply using the ros publish/suscribe paradigm. Each of
-the TurtleBots constantly processed the received LaserScans, as outlined in \ref{Sensor Measurements} and published
-them to a topic call processed\_scan. The mobile robot then subscribed to these topics and created Pose readings based
-on that sensor measurement. These Pose readings were then published on their own topic, which the filters were
-configured to subscribe too. Finally, the filters output their total state estimation reading on a separate topic,
-which we were then able to record, graph, etc.
+\subsection{Inter-Node Communication System} \label{Inter-Node Communication System} The communication system between
+the ROS nodes was created very simply using the ros publish/suscribe paradigm. Each of the TurtleBots constantly
+processed the received LaserScans, as outlined in \ref{Sensor Measurements} and published them to a topic call
+processed\_scan. The mobile robot then subscribed to these topics and created Pose readings based on that sensor
+measurement. These Pose readings were then published on their own topic, which the filters were configured to subscribe
+too. Finally, the filters output their total state estimation reading on a separate topic, which we were then able to
+record, graph, etc.
 
 In essence, the use of ROS greatly simplified the networking of this system. Rather than having to work through the
-intricacies of networking the robots together, we were able to create a system that is extensible to an arbitrary
-number of robots and extremely resilient to failures, while also being incredibly simple.
+intricacies of networking the robots together, we were able to create a system that is extensible to an arbitrary number
+of robots and extremely resilient to failures, while also being incredibly simple.
 
-\section{Results}
-% discuss and display sim vs filtered odom using std dev error bars
+\section{Results} \label{Results} % discuss and display sim vs filtered odom using std dev error bars
 Figure 2 displays a comparison of the predicted odometry measurements via distributed and self filters with the actual
 simulator odometry measurements per the four experiments performed. In accordance with the figure, we observe that the
 filtered odometry is very close in accuracy to the simulator odometry in both cases.
@@ -290,30 +229,14 @@ filtering method. Figure 4 displays the comparison in error over time of both di
 
 Overall, the results of our simulation support our hypothesis about the application of an EKF or UKF to accurately
 estimate the position of a single mobile robot R via N-1 other robots monitoring R in a 1-D environment.
-\section{Conclusion}
+
+\section{Conclusion} \label{Conclusion} 
 The conclusion goes here.
 
-% use section* for acknowledgment
 \section*{Acknowledgement}
-
 
 The authors would like to thank...
 
-
-% references section
-
-% can use a bibliography generated by BibTeX as a .bbl file
-% BibTeX documentation can be easily obtained at:
-% http://mirror.ctan.org/biblio/bibtex/contrib/doc/
-% The IEEEtran BibTeX style support page is at:
-% http://www.michaelshell.org/tex/ieeetran/bibtex/
-%\bibliographystyle{IEEEtran}
-% argument is your BibTeX string definitions and bibliography database(s)
-%\bibliography{IEEEabrv,../bib/paper}
-%
-% <OR> manually copy in the resultant .bbl file
-% set second argument of \begin to the number of references
-% (used to reserve space for the reference number labels box)
 \printbibliography
-% that's all folks
+
 \end{document}
