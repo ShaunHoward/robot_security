@@ -64,30 +64,21 @@ Science Department\\ Case Western Reserve University\\ Cleveland, Ohio 44106\\ E
 % As a general rule, do not put math, special symbols or citations
 % in the abstract
 \begin{abstract}
-In this paper, we propose the use of both an Extended Kalman Filter (EKF) and an Unscented Kalman
+In this paper, we proposed the use of both an Extended Kalman Filter (EKF) and an Unscented Kalman
 Filter (UKF) in order to determine the x-position of a single mobile robot (R) given multiple noisy sensor measurements.
-Given a squadron of N robots in a one-dimensional environment, the x-position of robot R with noisy odometry data can be
-estimated via the sensor measurements of all N robots denoted S. Each robot in S can monitor the true position of R via
-their laser scan sensor in order to build a set of pose estimates for R. The resulting set of N pose estimates can be
-filtered in a distributed fashion either via an EKF or UKF in order to accurately estimate the current pose of R in the
-one-dimensional environment.
+Given a squadron of N robots in a one-dimensional environment, the x-position of robot R with noisy odometry data was
+estimated via the sensor measurements of all N robots denoted S. Each robot in S monitored the true position of R via
+a laser scan sensor in order to build a set of pose estimates for R. The resulting set of N pose estimates were fused
+by means of a distributed network into either an EKF or UKF in order to accurately estimate the pose of R as it moved 
+randomly between two networked robots in a one-dimensional simulator environment.
 
-We demonstrate the usefulness of this state estimation procedure through a three robot simulation in Gazebo. We compare
+We demonstrated the usefulness of this state estimation procedure through a three robot simulation in Gazebo. We compared
 the results of the distributed filter with a self-filter in this environment where R estimates its own position via
-object detection and either an EKF or UKF. We simulate the use of each filter with varying speeds of R. We analyze and
-compare filter results from each simulation in order to determine the reliability of each filter. Our simulation results
-reveal that the distributed filter frequently out-performs the self-filter in terms of accuracy without any additional
-parameter tuning.
+object detection and either an EKF or UKF. We simulated the use of each filter with varying speeds of R. We analysed and
+compared filter results from each simulation in order to determine the reliability of each filter. Our simulation results
+have revealed that the distributed EKF and UKF filters outperformed all other self-filter configurations in terms of accuracy 
+without any additional parameter tuning.
 \end{abstract}
-
-% Same thing here, we didn't actually look into attacking any sensors
-The idea behind the method is derived from the method proposed in [1]. Their method uses an EKF to predict the position
-of one terrorized robot given N sensor measurements. The difference between the methods is that this method analyses the
-usage of an EKF as well as UKF for estimating the position of a terrorized robot given N-1 measurements from remote
-sensors and a single sensor measurement given point cloud data from the affected robot. Both filters show remarkable
-results in tracking the terrorized robot's position over time, but the UKF beats the EKF in accuracy most of the time.
-The simulation uses three robots with one terrorized and monitored by the other two to test the estimation hypothesis
-and prove that UKF works with one-dimensional robot position estimation from N noisy sensor measurements.
 
 \section{Introduction} \label{Introduction}
 Networked cyber-physical systems have become more and more common in recent history. Traditionally, as the need for more
@@ -109,35 +100,51 @@ Our system is based on the TurtleBot 2 platform and the Robot Operating System (
 \label{pic1} 
 \centering 
 \includegraphics[scale=.2]{sim1}
-\caption{Three TurtleBots on a world-based grid world attempt to estimate the position of the moving robot.}
+\caption{A squadron S of three TurtleBot 2's on a grid-based world attempt to estimate the position of R, the middle moving TurtleBot 2.}
 \end{figure}
 
-There are two primary contributions of this paper. First, we outline a system in ROS that implements a distributed sensor network between three robots, and is easily scalable to an arbitrary number. Second, we compare the performance of different filters in both the distributed and egocentric world-view.
+There are two primary contributions of this paper. First, we discuss related work. Second, we outline a system in ROS that implements a distributed sensor network 
+between three robots and is easily scalable to an arbitrary number. Third, we statistically analyse and compare the position estimate results of the four different 
+filter configurations given the egocentric first person perspective and distributed third-person perspective EKFs and UKFs.
 
-\section{Problem Formulation} \label{Problem Formulation} % This should probably go in the introduction somewhere
+\section{Related Work} \label{Related Work}
+The idea behind our method was derived from the method proposed in [1]. Their method used an EKF to predict the position
+of one terrorized robot given N-1 sensor measurements. The difference between methods is that our method analysed the
+usage of an EKF and a UKF for estimating the position of a "lost" robot (R) given N positional (pose) estimates from remote
+sensors and a single sensor pose estimate given an on-board laser scan sensor. Both filters show remarkable results in tracking 
+the lost robot's position over time with the distributed filter, while the self-filter only works well with the EKF. Overall, 
+the UKF beats the EKF in accuracy, and the distributed sensor network UKF worked best of all. Our simulation used three robots 
+with one lost, uniformly randomly moving at a set speed between the two other robots in its local squadron. The two provided 
+pose estimates and itself made an estimate based on landmark detection. A filter, either EKF or UKF, was used to estimate R's 
+position. The experimental results prove our hypothesis that both the EKF and UKF work with an N-distributed sensor network.
+
+
+\section{Problem Formulation} \label{Problem Formulation}
 The concept of sensor fusion and combining multiple sensor readings within a single robot has been well shown. By
 combining data from multiple sensors and feeding that information into an EKF or UKF, the total accuracy of the system
 can be improved. Inherent noise in one sensor will propagate less into the final result, and the loss of a single or
 multiple sensors will not necessarily result in catastrophic failure of the system.
 
-Our problem specification is created from these core tenets:
+Our problem specification is created from the following core tenets:
 \begin{enumerate} 
 \item A finite 1-D system containing a mobile robot 
-\item A physical landmark (e.g. stationary robot) at each end of the system \item The mobile robot and
-landmarks are all equipped with a sensor that measures distance \item The mobile robot can move forwards and backwards,
-but cannot change its orientation (this obviates the need for a recognition system between the robot and landmarks)
+\item A physical landmark (e.g. stationary robot) at each end of the system
+\item The mobile robot and landmarks are all equipped with a sensor that measures distance 
+\item The mobile robot can move forwards and backwards, but cannot change its orientation (this obviates the need for a 
+recognition system between the robot and landmarks)
 \end{enumerate}
 
-The core problems solved in the implementation of this system are:
-\begin{enumerate} \item Implementation of Extended and Unscented Kalman filters via the robot\_localization package \cite{robot_localization}
-\item Create a ROS system that simulates a TurtleBot 2 and the stationary landmarks in Gazebo \cite{gazebo}.
-\item Create a ROS node system for the TurtleBot 2 that facilitates communication between the mobile robot and the stationary landmarks, and also
-transforms and feeds those measurements into the filters. 
+The core problems solved by our research methodology are the following:
+\begin{enumerate}
+\item Implementation of Extended and Unscented Kalman filters via the robot\_localization package \cite{robot_localization}
+\item Creation of ROS system that simulates a TurtleBot 2 and the stationary landmarks in Gazebo \cite{gazebo}.
+\item Creation of ROS node system for TurtleBot 2 that facilitates communication between a mobile robot and stationary 
+landmarks as well as transforms and feeds those measurements into filter for pose estimation. 
 \end{enumerate} 
 
 \section{Methodology} \label{Methodology} As stated above, the project naturally divided itself into three main
-problems. These three problems were the implementation of the Extended and Unscented Kalman filters, simulation of the
-TurtleBot 2 and 1-D environment in Gazebo, and creating the system of ROS nodes for the TurtleBot 2 to communicate with
+problems. These three problems were the implementation of the Extended and Unscented Kalman filters, simulation of multiple
+TurtleBot 2 robots in a Gazebo 1-D environment, and creation of a system of ROS nodes for the TurtleBot 2 to communicate with
 the stationary landmarks and the filters.
 
 \subsection{Sensor Measurements} \label{Sensor Measurements} Before describing our filter, we will describe how we
@@ -150,16 +157,18 @@ variance of the measurement being the variance of the entire group of measuremen
 
 \subsection{Filter Implementation} \label{Filter Implementation} We chose to implement our filters using the previously
 mentioned robot\_localization. We chose this package due to its ability to do sensor fusion of an arbitrary number of
-sensors, because it was built for ROS, and because of the simple setup but also the complex configurations that it
-enables.
+sensors, because it was built for ROS, and because of the simple set up. Despite how easy it is, it allowed for complex configurations 
+that gave us quite a bit of freedom without having to deal with the implementation details or tweaking many parameters.  
 
-We implemented both an Extended and Unscented Kalman filter, but the actual configuration parameters for both of them
-were identical. Additionally, we implemented two filters on the mobile robot. The first we called the "Self" filter, and
-used only one distance measurements, taken by the robot's distance sensor to the landmark directly in front of it. The
-second filter we called the "Distributed" filter, and it took measurements from the robot's sensor, and also both of the
-landmark's sensors. All measurements were fed to the filter as a geometry\_msgs/PoseWithCovarianceStamped messages.
+We applied both an Extended and Unscented Kalman filter with default parameters. We found that the default configuration 
+parameters for both of the filters worked very well on the TurtleBot movement data. We applied these filter types in both
+a self-sensor and a distributed sensor network fashion. The first filter we called the "self" filter, and
+used only one distance measurement, taken by the moving robot's laser scan distance sensor for detecting an obstacle directly in front 
+of it. The second filter we called the "distributed" filter. The distributed filter consumed three pose estimates and covariance matrices, 
+two from the surrounding robots' laser scans and one from its own object detection. We realized that the covariance of these poses was just 
+the variance since the world is one-dimensional, so this facilitated our experiment. Thus,  All measurements were fed to the filter as geometry\_msgs/PoseWithCovarianceStamped messages.
 
-For both filters we set two\_d\_mode to true, because we did not care about any 3-dimensional motion. For the first
+For both filters we set the two\_d\_mode parameter to true, because we did not care about any 3-dimensional motion. For the first
 sensor measurement, we fused the x and y position and yaw into the final state estimate. Even though we assume a 1-D
 system with no y movement possible, and also assume that no yaw rotations will ever be made, the filters do not support
 a 1-D world so we had to include the y and yaw measurements. For the second and third sensor on the Distributed filter,
@@ -179,7 +188,8 @@ measurement would have.
 
 We did not utilize any of the advanced parameters for either filter, and for the Unscented Kalman Filter we left the
 alpha, beta, and kappa values at their defaults (0.001, 0, and 2, respectively). Once running, the filter nodes
-published their topics via the standard ros publish/subscribe system and we were able to view this data.
+published their topics via the standard ROS publish/subscribe system. We were able to view and record this data 
+with rqt\_plot and rosbag commands.
 
 
 \subsection{Gazebo Simulation} \label{Gazebo Simulation} Our simulation experiments were run in Gazebo with three
@@ -190,31 +200,48 @@ at various speeds in the one-dimensional environment.
 
 The robot models used were the default TurtleBot 2 URDFs provided by the TurtleBot ROS package \cite{turtlebot}. The
 robots were spawned into the world following the instructions laid out in the Gazebo Bringup Guide, with each robot
-brought up inside of its own namespace to avoid conflicts.
+brought up inside of its own namespace to avoid conflicts. Each simulator by default includes an Xbox Kinect 3-D
+camera used to detect landmarks in from of the robot from depth image information. The precision of the depth information
+about surroundings directly in front of the robot is high. We used this depth information to create our own lidar 
+sensor by using a specific angle of points directly in front of the robot. These points were used as a laser scan to emulate
+a lidar 3-D laser scanner. The depth camera has its own frame which monitors the minimum and maximum range as well as position
+of the camera in reference to the robot's base\textunderscore footprint\textunderscore self or base\textunderscore footprint\textunderscore
+distributed frame used to distinguish where the
+robot is located in reference to the self and distributed sensors. A screenshot of R's RGB point cloud view is in figure \ref{pic2}.
+
+\begin{figure}
+\label{pic2} 
+\centering 
+\includegraphics[scale=.23]{t2_camera_link}
+\caption{A view in the perspective of the moving TurtleBot's camera\textunderscore link in reference to the camera\textunderscore rgb\textunderscore frame.}
+\end{figure}
 
 The robots were spawned at Gazebo world coordinate (0,0), (2,0), and (4,0). The random motion of the mobile robot was
-allowed between (1,0), and (3,0). These limits were chosen based on the Kinect's maximum range of 4m and minimum range
-of .8m. To create the random motion, the robot would get a random number between -1 and 1 from a uniform distribution
-and use that as an amount to move, with negative being backwards and positive forwards. Then a check was done to see if
-the final position after the move wo uld be inside the movement bounds. If not, a new movement amount was generated. If
-the move was acceptable, it was executed, with the progress being monitored by the Gazebo generated odometry. This
-random motion repeated infinitely until stopped.
+allowed between (1,0), and (3,0). These limits were chosen based on the Kinect's minimum range of 0.8 m and maximum range 
+of 4 m. To create random motion, robot R sampled a random number uniformly between -1 and 1 and used that as its next increment
+of movement in the x-direction. Direction was determined by the sign, with negative being backward and positive being forward. 
+Then a boundary check was performed to validate that the final position after the move would be inside the movement bounds. 
+If an invalid move was selected, the robot would wait until a new, valid positional movement amount was generated. If 
+the goal was acceptable, R moved at the set experimental speed until it reached near the goal based on dead-reckoning. As R
+moved, it's pose position and covariance were monitored by ROS via rostopics. The Gazebo simulator odometry was also tracked 
+for the purpose of comparing the filtered odometry with the simulator odometry during analysis This random motion repeated infinitely 
+until either the simulation stopped or the robot drifted out of the parallel robot alignment setup which facilitated our experiment.
 
 \subsection{Inter-Node Communication System} \label{Inter-Node Communication System} The communication system between
-the ROS nodes was created very simply using the ros publish/suscribe paradigm. Each of the TurtleBots constantly
+the ROS nodes was created very simply using the ROS publish/subscribe paradigm. Each of the TurtleBots constantly
 processed the received LaserScans, as outlined in \ref{Sensor Measurements} and published them to a topic call
-processed\_scan. The mobile robot then subscribed to these topics and created Pose readings based on that sensor
-measurement. These Pose readings were then published on their own topic, which the filters were configured to subscribe
+processed\_scan. The mobile robot then subscribed to these topics and created pose readings based on that sensor
+measurement. These pose readings were then published on their own topic, which the filters were configured to subscribe
 too. Finally, the filters output their total state estimation reading on a separate topic, which we were then able to
-record, graph, etc.
+record, graph and analyse.
 
 In essence, the use of ROS greatly simplified the networking of this system. Rather than having to work through the
 intricacies of networking the robots together, we were able to create a system that is extensible to an arbitrary number
-of robots and extremely resilient to failures, while also being incredibly simple.
+of robots and extremely resilient to failures, while also being incredibly simple to run and extend.
 
 \section{Results} \label{Results} % discuss and display sim vs filtered odom using std dev error bars
 \subsection{Data Acquisition and Analysis} \label{Data Acquisition and Analysis}
-The ros topics odometry pose messages echoed are 
+The ROS topics odometry pose messages echoed are 
 recorded during the experiment with rosbag, converted to comma-separated value files, and analysed statistically with 
 python and numpy. We visualize the results using matplotlib with a Matlab plotting interface via python. If one of the 
 captured odometry topics is sampled at a higher frequency, a moving window average is used to estimate the data to match 
@@ -226,7 +253,7 @@ The first experiment runs the simulation with R moving at 0.2 m/s. Figure NEED R
 with R at 0.2 m/s. 
 
 %\begin{figure}[!ht]
-%\label{pic2} 
+%\label{pic3} 
 %\centering 
 %\includegraphics[scale=.2]{ekf_.2_table}
 %\end{figure}
@@ -234,32 +261,35 @@ with R at 0.2 m/s.
 The data shows that the standard deviation, error and variance is higher in the distributed filter measurements than the 
 self-filter measurements, but the self-filter has a higher root mean squared-error in accordance with the actual simulator odometry measurements than the distributed filter. From this fact, we can estimate that the distributed filter will perform better in this experiment than the self-filter. 
 
-Figure \ref{pic3} displays a comparison of the predicted odometry measurements via the self EKF to the actual simulator 
+Figure \ref{pic4} displays a comparison of the predicted odometry measurements via the self EKF to the actual simulator 
 odometry. As depicted in the image, the self filter is not always within one standard deviation of the exact simulator 
-odometry value. The self EKF tends to be inaccurate with sharp direction changes but is more reliable over time along a smooth interval.
+odometry value. The self EKF tends to be inaccurate until it builds more confidence using its history of input values. We can see that earlier on it
+was erroneous, especially with sharp direction changes, but it grows more reliable over time or along a smooth interval.
 
 \begin{figure}
 
 \centering 
 \includegraphics[scale=.45]{ekf_2speed_t2_self_filtered_odom_pos_err_graph}
 \caption {A plot of the self-EKF position estimate along the simulator odometry curve over time 
-reveals the inaccuracies of the ego-centric EKF along sharp changes in direction. Error bars represent one standard deviation.}
-\label{pic3} 
+reveals the inaccuracies of the ego-centric EKF in early stages but supports its convergence over time.
+Error bars represent one standard deviation from the filtered value.}
+\label{pic4} 
 \end{figure}
 
 \par
-Figure \ref{pic4} displays a comparison between the distributed EKF filter with R at 0.2 m/s and simulator odometry. The 
+Figure \ref{pic5} displays a comparison between the distributed EKF filter with R at 0.2 m/s and simulator odometry. The 
 distributed filter tends to be within one standard deviation of the actual odometry values according to the graph. 
 Given the tolerable error on position estimation in the distributed EKF, it clearly outperforms the self-filter 
-in this experiment. Looking at the graph, we observe that the distributed filter handles sharp changes in direction well, and the simulator odometry measurement is always within one standard deviation from the filter estimate.
+in this experiment. Looking at the graph, we observe that the distributed filter handles early usage and sharp changes in direction well, 
+and the simulator odometry measurement is always within one standard deviation from the filter estimate.
 
 \begin{figure}
 \centering 
 \includegraphics[scale=.45]{ekf_2speed_t2_dist_filtered_odom_pos_err_graph}
 \caption {A plot of the distributed-EKF position estimate along the simulator odometry curve over time. It 
 reveals the enhanced accuracy of the distributed filter over the ego-centric EKF. The distributed filter does not suffer 
-from the inaccuracies in sharp direction changes that the self-filter does.}
-\label{pic4}
+from the inaccuracies in early usage and sharp direction change that the self-filter does.}
+\label{pic5}
 \end{figure}
 
 \subsubsection{R at 0.4 m/s} \label{EKF .4}
@@ -267,47 +297,48 @@ The second experiment runs the simulation with R moving at 0.4 m/s. Figure NEED 
 experiment 2 - EKF with R at 0.4 m/s. 
 
 %\begin{figure}[!ht]
-%\label{pic5} 
+%\label{pic6} 
 %\centering 
 %\includegraphics[scale=.2]{ekf_.4_table}
 %\end{figure}
 
 The statistics reveal that the self-filter has a lower variance, standard deviation and error than the distributed 
-filter, similar to the results shown in \ref{EKF .2}. However, the mean and median of the distributed filter position estimates closely agree with the mean of the 
-simulator odometry measurements. This hints that the self-filter is more precise with estimate generation, but it is 
+filter, similar to the results shown in \ref{EKF .2}. However, the mean and median of the distributed filter position estimates closely agree with 
+the mean of the simulator odometry measurements. This hints that the self-filter is more precise with estimate generation, but it is 
 still less reliable than the distributed filter at estimating position in all one-dimensional movement scenarios.
 
-Figure \ref{pic6} displays a comparison of the predicted odometry measurements via the self EKF to the actual simulator 
-odometry. Similar to Figure \ref{pic3}, the self filter is not always within one standard deviation of the exact simulator 
-odometry value. The inaccuracies in the self-filter are upheld in addition to a erroneous drift that is corrected over 
-time.
+Figure \ref{pic7} displays a comparison of the predicted odometry measurements via the self EKF to the actual simulator 
+odometry. Similar to Figure \ref{pic4}, the self filter is not always within one standard deviation of the exact simulator 
+odometry value. The inaccuracies in the self-filter are upheld as we observe the erroneous drift that is corrected over time.
 
 \begin{figure}
 \centering 
 \includegraphics[scale=.45]{ekf_4speed_t2_self_filtered_pos_err_graph}
 \caption {A second plot of the self-EKF position estimate along the simulator odometry curve over time 
-upholds the inaccuracies of the ego-centric EKF in response to sudden changes in movement.}
-\label{pic6} 
+upholds the inaccuracies of the ego-centric EKF in early stages as well as its response to sudden changes 
+in movement.}
+\label{pic7} 
 \end{figure}
 
-Figure \ref{pic7} graphs the distributed EKF along the simulator odometry curve. The measurements are usually within one standard 
-deviation of the actual values, but they reveal the inaccurate nature of the EKF with sudden changes in movement. These 
-sudden changes tend to create a brief drift that flows through the system until it is shortly corrected. The support of 
-the hypothesis in reference to the accuracy of the distributed EKF is slowly growing.
+Figure \ref{pic8} graphs the distributed EKF along the simulator odometry curve. The measurements are usually within one standard 
+deviation of the actual values, but they reveal the inaccurate nature of the EKF in early stages of operation. These early readings 
+are essentially sudden changes in the system that tend to create a brief drift which flows through the system until it is shortly 
+corrected after multiple similar measurements from the landmark sensor. Support of the hypothesis in reference to the accuracy 
+of the distributed Kalman filter over the self Kalman filter is slowly growing.
 
 \begin{figure}
 \centering 
 \includegraphics[scale=.45]{ekf_4speed_t2_dist_filtered_pos_err_graph}
 \caption {A second plot of the distributed EKF position estimate along the simulator odometry curve over time 
-upholds that the distributed EKF is usually more accurate than the self-filter but can also be prone to drift on sudden 
+upholds that the distributed EKF is usually more accurate than the self-filter but can also be prone to early drift on sudden 
 perturbations.}
-\label{pic7} 
+\label{pic8} 
 \end{figure}
 
-As we can see, the distributed EKF is prone to drift via sudden perturbations in movement like the self-EKF but 
+As we can see, the distributed EKF is prone to early drift via sudden perturbations in movement like the self-EKF but 
 eventually corrects itself in little time. The rate at which it corrects itself is quicker than that of the self-filter. 
 This is most likely due to the confidence the system has in the three sensor measurements over that it has in the single 
-sensor measurement from R. However, this figure shows more uncertainty at a higher speed than Figure \ref{pic4}. Perhaps some 
+sensor measurement from R. This figure does however show more uncertainty than Figure \ref{pic5} due to higher speed. Perhaps some 
 modifications to the EKF, e.g. using a UKF instead, will facilitate our proof of the hypothesis.
 
 \subsection{UKF Experiments} \label{UKF Experiments}
@@ -328,8 +359,8 @@ measurements than the distributed filter. From this fact, we can estimate that t
 again perform better in this experiment than the self-filter.
 
 Figure \ref{pic9} displays the self UKF filter at work with R at 0.2 m/s randomly moving back 
-and forth. The results of the run are not as favorable as previously seen. The 
-errors may be due to random ros sensor errors or lack of parameter tuning. Perhaps 
+and forth. The results of the run are not as favourable as previously seen. The 
+errors may be due to random ROS sensor errors or lack of parameter tuning. Perhaps 
 the distributed UKF will perform better as predicted.
 
 \begin{figure}
@@ -339,10 +370,9 @@ the distributed UKF will perform better as predicted.
 \label{pic9} 
 \end{figure}
 
-The distributed UKF performs well in its experiment, as predicted. The self-filter 
-is consistently more inaccurate than the distributed filter so far. One more 
-experiment should be able to conclude the simulation process. Figure \ref{pic10} graphs the 
-experiment. 
+The distributed UKF performs well in its experiment, as predicted. The distributed filter is consistently 
+more inaccurate than the self-filter so far. One more experiment should be able to conclude the simulation process. 
+Figure \ref{pic10} graphs the results of this trial. 
 
 \begin{figure}
 \centering 
@@ -381,17 +411,33 @@ with both filter types. Additionally, by no surprise we find that the UKF distri
 filtering method. Overall, the results of our simulation support our hypothesis about the application of an EKF or UKF to accurately
 estimate the position of a single mobile robot R via N sensor measurements given N robots networked in a distributed fashion in a 1-D environment. 
 The self and distributed EKF work moderately well, but the UKF only works well with default parameters in a distributed system set up of at least 
-two robots. Given more samples, the system was able to filter the data more accurately. We have shown that both the EKF and UKF work well in a 
-distributed set up. Hopefully the idea of networking robots to share and predict accurate positional and state information will break new ground in 
-the world of distributed and intelligent robotics network systems as a whole.
+two robots. Given more samples, the system was able to filter the data to predict output more accurately. We have shown that both the EKF 
+and UKF work well in a distributed set up. Hopefully the idea of networking robots to share and predict accurate positional and state information will break new ground in the world of distributed and intelligent robotics network systems as a whole given the results of our distributed sensor network state prediction
+system.
 
 \section{Conclusion} \label{Conclusion} 
-Given the results of these experiments, we can form multiple conclusions, The first, and most important, is that a distributed sensor network consistently outperforms the self sensor system. This is not surprising. By adding more sensor data the filters are able to create more accurate state estimates. We have shown that a distributed system for these additional sensor measurements is a viable option and can increase robot reliability while not increasing cost dramatically, like adding more sensors to individual robots would. As networked mobile robots become more and more prevalent, the cost and reliability of a distributed sensor network system will continue to increase.
+From the results of these experiments, we can form multiple conclusions. The first and most important observation is that a distributed sensor network consistently 
+outperforms the self sensor system. This is not surprising. By adding more sensor data, the filters are able to create more accurate state estimates. Second, we 
+must examine our result that the EKF outperformed the UKF in the single sensor configuration. We believe this is not an important result for two reasons. First, the 
+main advantage of a UKF over an EKF is a non-linear system. However, our mobile robot moved at constant velocity in one dimension, greatly diminishing the 
+advantages of the UKF. Further, a mobile robot with one sensor will never be a realistic model. Any production robot will have more than one sensor on-board for 
+localization, so we believe that fusion of multiple sensors per robot would create an even better distributed system with direct increase and no real overhead if 
+the robots are already available. We know that this research is extensible further than this very specific and one-dimensional instance based on class research, and 
+we have shown that the UKF will almost always be the best choice of Kalman filter for distributed sensor fusion pose estimation.
 
-Second, we must examine our result that the EKF outperformed the UKF in the single sensor configuration. We believe this is not an important result for two reasons. First, the main advantage of a UKF over an EKF is in non-linear system. However, our mobile robot moved at constant velocity in one dimension, greatly diminishing the advantages of the UKF. Further, a mobile robot with one sensor will never be a realistic model. Any production robot will have more than one sensor on-board for localization, so we believe that outside of this very specific and admittedly unrealistic instance the UKF will always be a superior choice.
+We have shown that the distributed system for multiple sensor measurements is a viable option and may increase robot reliability. The method is not top-heavy, 
+for the distributed networking system is very fast in transmission and computation because it is modelled after an individual mobile robot sensor fusion system as 
+in [1]. Our additional contribution is to abstract away the state estimation system to ROS nodes while the robots run independently of each other. If employed in 
+a real robot network, an external ROS node server could monitor each of the robots individually and handle all networking details based on preconfigured files. 
+This method will not increase cost dramatically as adding more sensors to an individual robot would. We believe and hope to suggest that distributed robot sensor 
+networks a are viable means of robot communication for driving cooperation and positional information estimation based on individual viewpoints. This filtering 
+technique could be applied for position estimation if any odometry sensors are very noise or the system is compromised. A  secure state prediction squadrons that 
+could be used in autonomous vehicles, transport, defense, industry, and agriculture. As networked mobile robots become more and more prevalent, the cost and 
+reliability of a distributed sensor network system will continue to decrease, effectively making easy-to-network robots more maintainable and manageable for 
+businesses and people to use everyday.
 
 \subsection{Future Work}
-There are a number of future possibilities for expanding upon this work and verifying the results we found. The first is to increase the realism of the simulation. We chose a 1-D, constant velocity, single sensor per robot simulation because it allowed for simple verification of our hypotheses. However this is not a realistic use case for a mobile robot. We would like to see the simulation expanded to two dimensions, varying velocities, and $\geq 3$ sensors per robot. Additionally, the Gazebo environment contains practically zero sensor noise. Expanding the simulation to include realistic noise would give a better indication of the EKF vs UKF performance, and also what sort of accuracy can be expected in a real world use case.
+There are a number of future possibilities for expanding upon this work and verifying the results we found. The first is to increase the realism of the simulation. We chose a 1-D, constant velocity, single sensor per robot simulation because it allowed for simple verification of our hypotheses. However this is not a realistic use case for a mobile robot. We would like to see the simulation expanded to two dimensions, varying velocities, and $\geq 3$ sensors per robot. Additionally, the Gazebo environment contains practically zero sensor noise. Expanding the simulation to include realistic noise would give a better indication of the EKF vs. UKF performance and also what sort of accuracy can be expected in a real world use case.
 
 Further, there is a large opportunity for research in the area of mobile robot security. \cite{bezzo2014attack}, \cite{fawzi2011secure}, and \cite{mo2014resilient} all demonstrate work with Kalman Filters that reduces the impact of sensor attacks on the final state estimate. Further, all of these focus on a single robot with multiple sensors. In the case of mobile robots and real world use however, there is very little guarantee that sensors will not be tampered with on a robot. And if an attacker has physical access to the entire robot, they could realistically attack every sensor. Thus, a distributed sensor network could provide a robust system resilient to attacks against one or multiple robot's sensors. 
 
