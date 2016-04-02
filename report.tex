@@ -200,14 +200,14 @@ at various speeds in the one-dimensional environment.
 
 The robot models used were the default TurtleBot 2 URDFs provided by the TurtleBot ROS package \cite{turtlebot}. The
 robots were spawned into the world following the instructions laid out in the Gazebo Bringup Guide, with each robot
-brought up inside of its own namespace to avoid conflicts. Each simulator by default includes an Xbox Kinect 3-D
-camera used to detect landmarks in from of the robot from depth image information. The precision of the depth information
+brought up inside of its own namespace to avoid conflicts. Each model by default includes an Xbox Kinect 3-D
+camera used to detect landmarks in front of the robot using depth image information. The precision of the depth information
 about surroundings directly in front of the robot is high. We used this depth information to create our own lidar 
 sensor by using a specific angle of points directly in front of the robot. These points were used as a laser scan to emulate
 a lidar 3-D laser scanner. The depth camera has its own frame which monitors the minimum and maximum range as well as position
 of the camera in reference to the robot's base\textunderscore footprint\textunderscore self or base\textunderscore footprint\textunderscore
-distributed frame used to distinguish where the
-robot is located in reference to the self and distributed sensors. A screenshot of R's RGB point cloud view is in figure 2.
+distributed frame used to distinguish where the robot was located in reference to the self and distributed sensors. A screenshot 
+of R's RGB point cloud view from the camera\textunderscore frame is in figure 2.
 
 \begin{figure}
 \label{pic2} 
@@ -223,16 +223,16 @@ of movement in the x-direction. Direction was determined by the sign, with negat
 Then a boundary check was performed to validate that the final position after the move would be inside the movement bounds. 
 If an invalid move was selected, the robot would wait until a new, valid positional movement amount was generated. If 
 the goal was acceptable, R moved at the set experimental speed until it reached near the goal based on dead-reckoning. As R
-moved, it's pose position and covariance were monitored by ROS via rostopics. The Gazebo simulator odometry was also tracked 
-for the purpose of comparing the filtered odometry with the simulator odometry during analysis This random motion repeated infinitely 
+moved, it's pose position and covariance were monitored by ROS via topics. The Gazebo simulator odometry was also tracked 
+for the purpose of comparing the filtered odometry with the simulator odometry during analysis. This random motion repeated infinitely 
 until either the simulation stopped or the robot drifted out of the parallel robot alignment setup which facilitated our experiment.
 
 \subsection{Inter-Node Communication System} \label{Inter-Node Communication System} The communication system between
 the ROS nodes was created very simply using the ROS publish/subscribe paradigm. Each of the TurtleBots constantly
 processed the received LaserScans, as outlined in \ref{Sensor Measurements} and published them to a topic call
 processed\_scan. The mobile robot then subscribed to these topics and created pose readings based on that sensor
-measurement. These pose readings were then published on their own topic, which the filters were configured to subscribe
-too. Finally, the filters output their total state estimation reading on a separate topic, which we were then able to
+measurement. These pose readings were then published on their own topic, which the filters were subscribed to. 
+Finally, the filters output their total state estimation readings on a separate topic, which we were then able to
 record, graph and analyse.
 
 In essence, the use of ROS greatly simplified the networking of this system. Rather than having to work through the
@@ -245,7 +245,9 @@ The ROS topics odometry pose messages echoed are
 recorded during the experiment with rosbag, converted to comma-separated value files, and analysed statistically with 
 python and numpy. We visualize the results using matplotlib with a Matlab plotting interface via python. If one of the 
 captured odometry topics is sampled at a higher frequency, a moving window average is used to estimate the data to match 
-the other measurements one-to-one for analysis purposes. We take several statistics from the odometry data gathered per each experiment. 
+the other measurements one-to-one for analysis purposes. We take several statistics from the odometry data gathered per each experiment 
+including mean, median, variance, standard deviation, standard error and root mean squared error. The 
+experiments follow. 
 
 \subsection{EKF Experiments} \label{EKF Experiments}
 \subsubsection{R at 0.2 m/s} \label{EKF .2}
@@ -259,13 +261,13 @@ with R at 0.2 m/s.
 \caption{Experiment one statistics of self and distributed filter estimates against the exact simulator odometry measurements.} 
 \end{figure}
 
-The data shows that the standard deviation, error and variance is higher in the distributed filter measurements than the 
+The data shows that the standard deviation, error and variance are higher in the distributed filter measurements than the 
 self-filter measurements, but the self-filter has a higher root mean squared-error in accordance with the actual simulator odometry measurements than the distributed filter. From this fact, we can estimate that the distributed filter will perform better in this experiment than the self-filter. 
 
 Figure 4 displays a comparison of the predicted odometry measurements via the self EKF to the actual simulator 
-odometry. As depicted in the image, the self filter is not always within one standard deviation of the exact simulator 
-odometry value. The self EKF tends to be inaccurate until it builds more confidence using its history of input values. We can see that earlier on it
-was erroneous, especially with sharp direction changes, but it grows more reliable over time or along a smooth interval.
+odometry. As depicted in the image, the self-filter is not always within one standard deviation of the exact simulator 
+odometry value. The self EKF tends to be inaccurate until it builds more confidence using its history of input values. We see early on it that it
+is erroneous, especially with sharp direction changes, but it grows more reliable over time and along smooth intervals.
 
 \begin{figure}
 
@@ -306,8 +308,9 @@ experiment 2 - EKF with R at 0.4 m/s.
 
 The statistics reveal that the self-filter has a lower variance, standard deviation and error than the distributed 
 filter, similar to the results shown in \ref{EKF .2}. However, the mean and median of the distributed filter position estimates closely agree with 
-the mean of the simulator odometry measurements. This hints that the self-filter is more precise with estimate generation, but it is 
-still less reliable than the distributed filter at estimating position in all one-dimensional movement scenarios.
+those values for the simulator odometry measurements. This hints that the self-filter is more precise with estimate generation, but it is 
+sometimes prone to inaccuracies that throw it off, making it less reliable than the distributed filter at estimating position in general 
+one-dimensional movement scenarios.
 
 Figure 7 displays a comparison of the predicted odometry measurements via the self EKF to the actual simulator 
 odometry. Similar to figure 4, the self filter is not always within one standard deviation of the exact simulator 
@@ -396,12 +399,16 @@ with R at 0.4 m/s.
 \end{figure}
 
 The data shows that the root mean squared error is high in the self filer as compared to the distributed filter. 
-We can predict that the distributed filter will continue to dominate the self-filter in this experiment.
+We find that the statistics for the distributed UKF pose estimates are very similar to the actual simulator 
+odometry measurements. We can predict that the distributed filter will continue to dominate the self-filter in 
+this experiment.
 
 Figure 13 displays the results of running the self UKF at 0.4 m/s. The UKF does not 
 appear to be very reliable for a single measurement at a higher speed. The measurements 
 sometimes drift far off course and take a while to converge back to a reasonable 
-confidence interval.
+confidence interval. Here we see that the self-UKF is no good for even a one-dimensional world with the default parameters.
+In contrast, the distributed UKF in figure 14 unsurprisingly reveals that more sensor measurements lead to a greater
+accuracy and precision in the filter as compared to the self-filter. 
 
 \begin{figure}
 \centering 
@@ -411,9 +418,6 @@ odometry curve over time.}
 \label{pic13} 
 \end{figure}
 
-Here we see that the self-UKF is no good for even a one-dimensional world with the default parameters.
-The distributed UKF in figure 14 unsurprisingly reveals that more sensor measurements lead to a greater
-precision and recall in the filter as compared to the self-filter. 
 
 \begin{figure}
 \centering 
@@ -428,13 +432,13 @@ filtering method. Overall, the results of our simulation support our hypothesis 
 estimate the position of a single mobile robot R via N sensor measurements given N robots networked in a distributed fashion in a 1-D environment. 
 The self and distributed EKF work moderately well, but the UKF only works well with default parameters in a distributed system set up of at least 
 two robots. Given more samples, the system was able to filter the data to predict output more accurately. We have shown that both the EKF 
-and UKF work well in a distributed set up. Hopefully the idea of networking robots to share and predict accurate positional and state information will break new ground in the world of distributed and intelligent robotics network systems as a whole given the results of our distributed sensor network state prediction
+and UKF work well in a distributed set up. Hopefully the idea of networking robots to share and predict accurate positional and state information will break new ground in the world of distributed and intelligent robotics network systems given the results of our distributed sensor network state prediction
 system.
 
 \section{Conclusion} \label{Conclusion} 
 From the results of these experiments, we can form multiple conclusions. The first and most important observation is that a distributed sensor network consistently 
-outperforms the self sensor system. This is not surprising. By adding more sensor data, the filters are able to create more accurate state estimates. Second, we 
-must examine our result that the EKF outperformed the UKF in the single sensor configuration. We believe this is not an important result for two reasons. First, the 
+out-performs the self sensor system. This is not surprising. By adding more sensor data, the filters are able to create more accurate state estimates. Second, we 
+must examine our result that the EKF out-performed the UKF in the single sensor configuration. We believe this is not an important result for two reasons. First, the 
 main advantage of a UKF over an EKF is a non-linear system. However, our mobile robot moved at constant velocity in one dimension, greatly diminishing the 
 advantages of the UKF. Further, a mobile robot with one sensor will never be a realistic model. Any production robot will have more than one sensor on-board for 
 localization, so we believe that fusion of multiple sensors per robot would create an even better distributed system with direct increase and no real overhead if 
@@ -445,10 +449,11 @@ We have shown that the distributed system for multiple sensor measurements is a 
 for the distributed networking system is very fast in transmission and computation because it is modelled after an individual mobile robot sensor fusion system as 
 in \cite{bezzo2014attack}. Our additional contribution is to abstract away the state estimation system to ROS nodes while the robots run independently of each other. If employed in 
 a real robot network, an external ROS node server could monitor each of the robots individually and handle all networking details based on preconfigured files. 
-This method will not increase cost dramatically as adding more sensors to an individual robot would. We believe and hope to suggest that distributed robot sensor 
-networks a are viable means of robot communication for driving cooperation and positional information estimation based on individual viewpoints. This filtering 
-technique could be applied for position estimation if any odometry sensors are very noise or the system is compromised. A  secure state prediction squadrons that 
-could be used in autonomous vehicles, transport, defense, industry, and agriculture. As networked mobile robots become more and more prevalent, the cost and 
+This method will not increase cost as dramatically as adding more sensors to an individual robot would. We believe and hope to suggest that distributed robot sensor 
+networks are a viable means of robot communication for driving cooperation and positional information estimation based on individual viewpoints. This filtering 
+technique could be applied for position estimation if on-board odometry sensors are very noise or if the navigation system is 
+compromised. A secure state prediction squadron employing this research could be used in autonomous vehicles, transport, defense, flight, 
+industry, and agriculture. As networked mobile robots become more and more prevalent, the cost and 
 reliability of a distributed sensor network system will continue to decrease, effectively making easy-to-network robots more maintainable and manageable for 
 businesses and people to use everyday.
 
