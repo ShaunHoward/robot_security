@@ -110,8 +110,8 @@ filter configurations given the egocentric first person perspective and distribu
 \section{Related Work} \label{Related Work}
 The idea behind our method was derived from the method proposed in \cite{bezzo2014attack}. Their method used an EKF to predict the position
 of one terrorized robot given N-1 sensor measurements. The difference between methods is that our method analysed the
-usage of an EKF and a UKF for estimating the position of a "lost" robot (R) given N positional (pose) estimates from remote
-sensors and a single sensor pose estimate given an on-board laser scan sensor. Both filters show remarkable results in tracking 
+usage of an EKF and a UKF for estimating the position of a "lost" robot (R) given N positional (pose) estimates from both N-1 remote
+sensors and one single sensor pose estimate from R's on-board laser scan sensor. Both filters show remarkable results in tracking 
 the lost robot's position over time with the distributed filter, while the self-filter only works well with the EKF. Overall, 
 the UKF beats the EKF in accuracy, and the distributed sensor network UKF worked best of all. Our simulation used three robots 
 with one lost, uniformly randomly moving at a set speed between the two other robots in its local squadron. The two provided 
@@ -122,8 +122,8 @@ position. The experimental results prove our hypothesis that both the EKF and UK
 \section{Problem Formulation} \label{Problem Formulation}
 The concept of sensor fusion and combining multiple sensor readings within a single robot has been well shown. By
 combining data from multiple sensors and feeding that information into an EKF or UKF, the total accuracy of the system
-can be improved. Inherent noise in one sensor will propagate less into the final result, and the loss of a single or
-multiple sensors will not necessarily result in catastrophic failure of the system.
+can be improved. Inherent noise in one sensor will propagate less into the final filter result, and the loss of a single or
+multiple sensors theoretically should not result in catastrophic failure of the system given past proofs of the filter's success.
 
 Our problem specification is created from the following core tenets:
 \begin{enumerate} 
@@ -213,7 +213,8 @@ of R's RGB point cloud view from the camera\textunderscore frame is in figure 2.
 \label{pic2} 
 \centering 
 \includegraphics[width=0.49\textwidth]{t2_camera_link}
-\caption{A view in the perspective of the moving TurtleBot's camera\textunderscore link in reference to the camera\textunderscore rgb\textunderscore frame.}
+\caption{A view in the perspective of the moving TurtleBot's camera\textunderscore link in reference to the camera\textunderscore rgb\textunderscore frame. 
+The topic turtlebot2/odom is the simulator odometry pose.}
 \end{figure}
 
 The robots were spawned at Gazebo world coordinate (0,0), (2,0), and (4,0). The random motion of the mobile robot was
@@ -252,7 +253,9 @@ experiments follow.
 \subsection{EKF Experiments} \label{EKF Experiments}
 \subsubsection{R at 0.2 m/s} \label{EKF .2}
 The first experiment runs the simulation with R moving at 0.2 m/s. Figure 3 shows a table of the result statistics for experiment 1 - EKF 
-with R at 0.2 m/s. 
+with R at 0.2 m/s. The data shows that the standard deviation, error and variance are higher in the distributed filter measurements than the 
+self-filter measurements, but the self-filter has a higher root mean squared-error in accordance with the actual simulator odometry measurements than 
+the distributed filter. From this fact, we can estimate that the distributed filter will perform better in this experiment than the self-filter.
 
 \begin{figure}[!ht]
 \label{pic3} 
@@ -260,9 +263,6 @@ with R at 0.2 m/s.
 \includegraphics[width=0.49\textwidth]{ekf_2_table}
 \caption{Experiment one statistics of self and distributed filter estimates against the exact simulator odometry measurements.} 
 \end{figure}
-
-The data shows that the standard deviation, error and variance are higher in the distributed filter measurements than the 
-self-filter measurements, but the self-filter has a higher root mean squared-error in accordance with the actual simulator odometry measurements than the distributed filter. From this fact, we can estimate that the distributed filter will perform better in this experiment than the self-filter. 
 
 Figure 4 displays a comparison of the predicted odometry measurements via the self EKF to the actual simulator 
 odometry. As depicted in the image, the self-filter is not always within one standard deviation of the exact simulator 
@@ -297,7 +297,11 @@ from the inaccuracies in early usage and sharp direction change that the self-fi
 
 \subsubsection{R at 0.4 m/s} \label{EKF .4}
 The second experiment runs the simulation with R moving at 0.4 m/s. Figure 6 shows a table of the result statistics for 
-experiment 2 - EKF with R at 0.4 m/s. 
+experiment 2 - EKF with R at 0.4 m/s. The statistics reveal that the self-filter has a lower variance, standard deviation and error than the 
+distributed filter, similar to the results shown in \ref{EKF .2}. However, the mean and median of the distributed filter position estimates closely 
+agree with those values for the simulator odometry measurements. This hints that the self-filter is more precise with estimate generation, but it is 
+sometimes prone to inaccuracies that throw it off, making it less reliable than the distributed filter at estimating position in general 
+one-dimensional movement scenarios.
 
 \begin{figure}[!ht]
 \label{pic6} 
@@ -305,12 +309,6 @@ experiment 2 - EKF with R at 0.4 m/s.
 \includegraphics[width=0.49\textwidth]{ekf_4_table}
 \caption{Experiment two statistics of self and distributed filter estimates against the exact simulator odometry measurements.} 
 \end{figure}
-
-The statistics reveal that the self-filter has a lower variance, standard deviation and error than the distributed 
-filter, similar to the results shown in \ref{EKF .2}. However, the mean and median of the distributed filter position estimates closely agree with 
-those values for the simulator odometry measurements. This hints that the self-filter is more precise with estimate generation, but it is 
-sometimes prone to inaccuracies that throw it off, making it less reliable than the distributed filter at estimating position in general 
-one-dimensional movement scenarios.
 
 Figure 7 displays a comparison of the predicted odometry measurements via the self EKF to the actual simulator 
 odometry. Similar to figure 4, the self filter is not always within one standard deviation of the exact simulator 
@@ -349,7 +347,11 @@ modifications to the EKF, e.g. using a UKF instead, will facilitate our proof of
 \subsection{UKF Experiments} \label{UKF Experiments}
 \subsubsection{R at 0.2 m/s} \label{UKF .2}
 The third experiment runs the simulation with R moving at 0.2 m/s. Figure 9 shows a table of the result statistics for experiment 3 - UKF 
-with R at 0.2 m/s. 
+with R at 0.2 m/s. The data consistently shows that the standard deviation, error and variance are higher by a small amount in 
+the distributed filter measurements when compared with the self-filter measurements as with the EKF. However, 
+the self-filter still has a higher root mean squared-error in accordance with the actual simulator odometry 
+measurements than the distributed filter. From this fact, we can estimate that the distributed filter will 
+again perform better in this experiment than the self-filter.
 
 \begin{figure}[!ht]
 \label{pic9} 
@@ -357,12 +359,6 @@ with R at 0.2 m/s.
 \includegraphics[width=0.49\textwidth]{ukf_2_table}
 \caption{Experiment three statistics of self and distributed filter estimates against the exact simulator odometry measurements.} 
 \end{figure}
-
-The data consistently shows that the standard deviation, error and variance are higher by a small amount in 
-the distributed filter measurements when compared with the self-filter measurements as with the EKF. However, 
-the self-filter still has a higher root mean squared-error in accordance with the actual simulator odometry 
-measurements than the distributed filter. From this fact, we can estimate that the distributed filter will 
-again perform better in this experiment than the self-filter.
 
 Figure 10 displays the self UKF filter at work with R at 0.2 m/s randomly moving back 
 and forth. The results of the run are not as favourable as previously seen. The 
@@ -389,7 +385,10 @@ Figure 11 graphs the results of this trial.
 
 \subsubsection{R at 0.4 m/s} \label{UKF .4}
 The fourth experiment runs the simulation with R moving at 0.4 m/s. Figure 12 shows a table of the result statistics for experiment 4 - UKF 
-with R at 0.4 m/s. 
+with R at 0.4 m/s. The data shows that the root mean squared error is high in the self filer as compared to the distributed filter. 
+We find that the statistics for the distributed UKF pose estimates are very similar to the actual simulator 
+odometry measurements. We can predict that the distributed filter will continue to dominate the self-filter in 
+this experiment.
 
 \begin{figure}[!ht]
 \label{pic12} 
@@ -397,11 +396,6 @@ with R at 0.4 m/s.
 \includegraphics[width=0.49\textwidth]{ukf_4_table}
 \caption{Experiment four statistics of self and distributed filter estimates against the exact simulator odometry measurements.} 
 \end{figure}
-
-The data shows that the root mean squared error is high in the self filer as compared to the distributed filter. 
-We find that the statistics for the distributed UKF pose estimates are very similar to the actual simulator 
-odometry measurements. We can predict that the distributed filter will continue to dominate the self-filter in 
-this experiment.
 
 Figure 13 displays the results of running the self UKF at 0.4 m/s. The UKF does not 
 appear to be very reliable for a single measurement at a higher speed. The measurements 
@@ -417,7 +411,6 @@ accuracy and precision in the filter as compared to the self-filter.
 odometry curve over time.}
 \label{pic13} 
 \end{figure}
-
 
 \begin{figure}
 \centering 
