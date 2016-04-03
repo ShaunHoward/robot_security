@@ -10,14 +10,20 @@ from project1.msg import ScanWithVariance, ScanWithVarianceStamped
 
 
 class TurtleBot:
+    """
+    Base class for the Turtle Bot 2 in our experiments
+    author: Matt Swartwout and Shaun Howard
+    """
 
-    def __init__(self, speed=.2, rate=10):
+    def __init__(self, rate=10):
         rospy.init_node('robot')
 
+        # get the initial robot starting positions from the ros parameter server
         x_pos = rospy.get_param('x_pos')
         y_pos = rospy.get_param('y_pos')
         yaw = rospy.get_param('yaw')
 
+        # create a pose object for this t-bot so we can easily know its initial pose
         self.pose = Pose2D()
         self.pose.x = x_pos
         self.pose.y = y_pos
@@ -31,7 +37,6 @@ class TurtleBot:
         self.scan_received = False  # We haven't received a valid LaserScan yet
         self.processed_scan = None
 
-        self.speed = speed
         self.rate = rospy.Rate(rate)
 
         self.namespace = rospy.get_namespace()[1:]  # Get rid of the leading /
@@ -75,7 +80,7 @@ class TurtleBot:
 
         scan = ScanWithVariance()
 
-        # Now calculate sample mean and variance
+        # Find the min, max, mean, median, variance, std dev, and std error if there are particles
         if len(valid_particles) is not 0:
             scan.min = numpy.min(valid_particles)
             scan.max = numpy.max(valid_particles)
@@ -87,6 +92,7 @@ class TurtleBot:
             scan.std_dev = std
             scan.std_error = std / math.sqrt(len(valid_particles))
         else:
+            # otherwise, set all values to 0
             scan.min = 0
             scan.max = 0
             scan.mean = 0
@@ -100,6 +106,7 @@ class TurtleBot:
 
     @staticmethod
     def stamp_scan_w_variance(scan_w_variance):
+        # Create time-stamped scan message including the scan and variance of points
         stamped_scan_w_variance = ScanWithVarianceStamped()
         stamped_scan_w_variance.scan = scan_w_variance
         stamped_scan_w_variance.header.stamp = rospy.get_rostime()

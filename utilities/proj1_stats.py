@@ -6,6 +6,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import csv
 import csv2dict as cd
+# statistics list indices
 MEAN = 0
 MEDIAN = 1
 STD_DEV = 2

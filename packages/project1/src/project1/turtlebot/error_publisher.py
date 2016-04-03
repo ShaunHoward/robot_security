@@ -7,6 +7,7 @@ from nav_msgs.msg import Odometry
 from std_msgs.msg import Float32
 from geometry_msgs.msg import PoseWithCovarianceStamped, Pose2D
 
+# initialize all values to values we know are incorrect if any errors arise
 gazebo_x = -10
 self_x = -10
 dist_x = -10
@@ -60,17 +61,20 @@ def distance11_cb(scan):
     distance_11_mean = scan.scan.mean
     distance_11_median = scan.scan.median
 
+
 def distance33_cb(scan):
     global distance_33_mean
     global distance_33_median
     distance_33_mean = scan.scan.mean
     distance_33_median = scan.scan.median
 
+
 def distance32_cb(scan):
     global distance_32_mean
     global distance_32_median
     distance_32_mean = scan.scan.mean
     distance_32_median = scan.scan.median
+
 
 def pos1_cb(pose):
     global pos1
@@ -90,6 +94,7 @@ def pos3_cb(pose):
 def main():
     rospy.init_node('error_publisher')
 
+    # subscribe to all the relevant topics published by the robot sensor network
     gazebo_subscriber = rospy.Subscriber('turtlebot2/odom', Odometry, gazebo_cb)
     self_subscriber = rospy.Subscriber('turtlebot2/odometry/filtered_self', Odometry, self_cb)
     dist_subscriber = rospy.Subscriber('turtlebot2/odometry/filtered_distributed', Odometry, dist_cb)
@@ -106,6 +111,7 @@ def main():
     dist_publisher = rospy.Publisher('dist_err', Float32, queue_size=1)
     debug_publisher = rospy.Publisher('debug_info', DebugInfo, queue_size=1)
 
+    # make a bunch of global variables to store the values
     global gazebo_x
     global self_x
     global dist_x
@@ -126,6 +132,8 @@ def main():
     dist = Float32()
     debug = DebugInfo()
 
+    # update the values and add to a debug message
+    # publish that message repeatedly in this loop
     while not rospy.is_shutdown():
         self_err = gazebo_x - self_x
         dist_err = gazebo_x - dist_x

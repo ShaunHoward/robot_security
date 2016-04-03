@@ -38,13 +38,14 @@ def bagcsv2dict(fp, fn, topic_dict, col_names=["x", "covariance"], ext=".csv", c
     """
     key = 0
     my_dict = dict()
+    # read the columns of the given csv file
     for col_name in col_names:
         vals = []
         first = True
         reader = csv.reader(open(fp, "rb"))
         i_ = 1
+        # read the rows
         for rows in reader:
-            #if i < chop_size:
             if first:
                 first = False
                 inds = [i for i in range(len(rows)) if col_name in rows[i]]
@@ -52,14 +53,14 @@ def bagcsv2dict(fp, fn, topic_dict, col_names=["x", "covariance"], ext=".csv", c
                     col_name = "std_dev_from_covar"
                 key = inds[0]
                 continue
-            # don't forget to convert strings to the specified type!
+            # do different operations per x or std dev values
             if col_name == "x":
+                # don't forget to convert strings to the specified type!
                 vals.append(float(rows[key]))
             elif col_name == "std_dev_from_covar":
+                # only take the first covariance value due to 1-D system and get std deviation
                 vals.append(math.sqrt(float(rows[key].split(",")[0].lstrip('['))) / math.sqrt(i_))
             i_ += 1
-            #else:
-            #    break
         my_dict[col_name] = vals
     fn = fn.rstrip(ext)
     topic_dict[fn] = my_dict
@@ -67,6 +68,7 @@ def bagcsv2dict(fp, fn, topic_dict, col_names=["x", "covariance"], ext=".csv", c
 
 
 def convert_csvs_to_dict(csvs_path):
+    # gathers the csvs from the given path into one dictionary w/ key as the trial name, value as data set
     (fps, fns) = get_file_paths_and_names(csvs_path)
     my_dict = dict()
     for i in range(len(fps)):
