@@ -132,3 +132,5 @@ CATKIN_IGNORE
 # Jetbrains stuff
 .idea/
 
+# Compressed things
+*.zip
